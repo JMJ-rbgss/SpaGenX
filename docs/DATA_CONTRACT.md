@@ -4,7 +4,7 @@ All real data remain external. Placeholder paths in JSON must be replaced explic
 
 ## Training corpus and targets
 
-The native SpaGenX lineage uses 17 organs and four technology IDs, 1536-dimensional frozen UNI2-h image features, canonical vocabulary capacity115055, Program256 with at most16 memberships per gene, and candidate32/homo12/hetero8 typed neighborhoods. Training uses the original 960-section/2339452-row subset; validation63 and historical test182 belong to its source split. This is not the latest162-section/329612-spot expression benchmark, and no claim of that evaluation is made by the packaging tests.
+SpaGenX uses organ and technology metadata, 1536-dimensional frozen UNI2-h image features, a canonical gene vocabulary, Program256 with at most16 memberships per gene, and candidate32/homo12/hetero8 typed neighborhoods. Provide the corresponding data manifests and split files as external inputs.
 
 Corrected gene chunks must preserve `target_genes_raw_local_csr`, `observed_gene_mask_local`, and `local_to_global_gene_idx`, with explicit spot/row identities and finite raw-log1p values. A measured zero remains a supervised zero; absence of a probe is not a zero. Canonical ID collisions are handled by the original correction code, not fuzzy matching. Rowmap lookup must retain the stored row order and local-to-global identities.
 

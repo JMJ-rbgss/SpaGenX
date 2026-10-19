@@ -288,7 +288,7 @@ python preprocessing/run.py --stage hvg384 --config configs/preprocessing.local.
 
 ### 7.1 训练前必备
 
-需要完整外置feature store、校正gene chunks、rowmap、原train/val划分、typed-neighbor overlay、Program映射及active-row HVG384。正式来源为960张训练切片、63张验证切片；历史182张test不是最新162张表达Benchmark。
+需要完整外置feature store、校正gene chunks、rowmap、划分文件、typed-neighbor overlay、Program映射及active-row HVG384。按照配置提供对应的数据清单和路径。
 
 当前示例是**恢复/继续训练合同**，还需要step1000完整状态（模型、优化器及恢复信息）。缺少该状态时不能用SpaGenX推理权重冒充它。代码目录存在，不等于完整训练沿革可以从零复现。
 
