@@ -2,7 +2,7 @@
   "m2_sha256": "0bcb29527826a54f6be4ffd1e9140fc35167d6b48b9ced5ff21ab98e60cc7603",
   "uni2_sha256": "6e077eda234bebc595868d918d3458d9dd32a050199b0ff04443b2f46a0a3b1e",
   "paths": {
-    "m2_weights": "external_assets/m2_current42k.pt",
+    "m2_weights": "external_assets/SpaGenX_current42k.pt",
     "uni2_weights": "external_assets/uni2h/pytorch_model.bin",
     "program": "external_assets/gene_to_program_m16_overlay.pt",
     "vocab": "external_assets/global_gene_vocab.tsv",

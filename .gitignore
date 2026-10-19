@@ -1,0 +1,16 @@
+external_assets/
+runs/
+work_tmp/
+work_cache/
+__pycache__/
+*.pyc
+*.pt
+*.pth
+*.bin
+*.svs
+*.h5ad
+*.npz
+.env
+.venv/
+private_audit/
+bundle_config.json

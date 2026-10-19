@@ -1,6 +1,13 @@
 # SpaGenX完整使用说明（PyTorch命令版）
 
-本文对应当前代码包，所有命令从仓库根目录运行。用你自己的真实路径替换`/external/...`。本项目尚未配置公开仓库和SpaGenX权重下载地址，因此不提供虚构的`git clone`或自动下载命令。
+本文对应当前代码包，所有命令从仓库根目录运行。用你自己的真实路径替换`/external/...`。仓库为私有，以下克隆命令需要已授权的GitHub账号；SpaGenX权重下载地址尚未配置，不会自动下载权重。
+
+```bash
+git clone https://github.com/JMJ-rbgss/SpaGenX.git
+cd SpaGenX
+```
+
+模型对外统一命名为**SpaGenX**。代码中的历史入口文件名、配置查找键和序列化字段仅作为兼容性标识保留，并不表示另一个模型；不要直接改动这些标识而破坏既有资产读取。
 
 ## 1. 选择使用路线
 
@@ -78,7 +85,7 @@ repository/
 ├── configs/
 ├── bundle_config.json          # 本地配置，不提交GitHub
 └── external_assets/            # 外部获取，不提交GitHub
-    ├── m2_current42k.pt
+    ├── SpaGenX_current42k.pt
     ├── uni2h/pytorch_model.bin
     ├── gene_to_program_m16_overlay.pt
     ├── global_gene_vocab.tsv
@@ -99,7 +106,7 @@ cp configs/bundle.example.json bundle_config.json
 
 | 资产 | SHA256 |
 | --- | --- |
-| SpaGenX M2-current42K | `0bcb29527826a54f6be4ffd1e9140fc35167d6b48b9ced5ff21ab98e60cc7603` |
+| SpaGenX-current42K | `0bcb29527826a54f6be4ffd1e9140fc35167d6b48b9ced5ff21ab98e60cc7603` |
 | UNI2-h | `6e077eda234bebc595868d918d3458d9dd32a050199b0ff04443b2f46a0a3b1e` |
 
 其余冻结资产哈希见`docs/external_assets.json`。文件名相同不代表内容相同。
