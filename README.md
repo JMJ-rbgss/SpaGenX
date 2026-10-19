@@ -1,10 +1,14 @@
 # SpaGenX
 
+![SpaGenX data construction and framework overview](assets/SpaGenX_overview.png)
+
+*SpaGenX data construction and framework overview. Expression prompts are disabled in current42K inference.*
+
 [中文完整使用说明（PyTorch commands）](docs/USAGE.zh-CN.md) · [中文概览](README.zh-CN.md)
 
 The Chinese guide includes installation, external assets, automated WSI inference, output inspection, preprocessing stages, a standard four-GPU `torchrun` template and troubleshooting. The optional `scripts/infer_wsi.sh` automation previews commands by default and runs only with `--execute`.
 
-Source-only research code for preprocessing, native SpaGenX training, and frozen current42K inference. This package contains **no weights, patient data, images, gene dictionaries, feature caches, or optimizer states**. It is not a clinical service. Review the validation report before use. The repository is private and requires authorized GitHub access.
+Research code for preprocessing, native SpaGenX training, and frozen current42K inference, with an overview illustration. This package contains **no weights, patient-level data, raw research images, gene dictionaries, feature caches, or optimizer states**. It is not a clinical service. Review the validation report before use. The repository is private and requires authorized GitHub access.
 
 ## Layout
 

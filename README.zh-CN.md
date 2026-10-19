@@ -1,5 +1,9 @@
 # SpaGenX代码说明
 
+![SpaGenX数据构建与模型框架概览](assets/SpaGenX_overview.png)
+
+*SpaGenX数据构建与模型框架概览。current42K推理禁用表达prompt。*
+
 完整教程：[SpaGenX使用说明（PyTorch命令版）](docs/USAGE.zh-CN.md)。包括环境安装、资产配置、自动WSI推理、输出读取、研究数据预处理、四卡`torchrun`训练和故障排查。
 
 自动WSI入口为`bash scripts/infer_wsi.sh --dry-run`；设置教程要求的输入环境变量并核对配置后，用`--execute`显式运行。默认不执行模型计算。
