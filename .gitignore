@@ -14,3 +14,4 @@ __pycache__/
 .venv/
 private_audit/
 bundle_config.json
+configs/*.local.json
