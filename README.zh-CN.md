@@ -54,7 +54,7 @@ runs/                本地输出，不提交Git
 cp configs/bundle.example.json bundle_config.json
 ```
 
-修改资产路径，提供正式SpaGenX-current42K、UNI2-h、canonical词典、Program映射和17器官codebook。它们未随包分发，只有代码不能运行真实预测，当前未配置SpaGenX权重下载链接。UNI2-h需按官方条件独立获取。
+修改资产路径，提供SpaGenX权重、UNI2-h、canonical词典、Program映射和17器官codebook。它们未随包分发，只有代码不能运行真实预测，当前未配置SpaGenX权重下载链接。UNI2-h需按官方条件独立获取。
 
 基因文件每行一个明确符号或冻结ID、不带表头；器官使用冻结codebook类别。例如可查询`VIM`、`COL1A1`、`CD74`，但这不是所有器官的性能保证。
 
@@ -125,7 +125,7 @@ python training/run.py --config configs/train.local.json --execute
 
 第二条命令预览分布式命令，第三条才训练。配置采用四卡、每卡batch64、BF16、AdamW、学习率/weight decay均1e-4、gradient clip1.0、gene chunk2048和seed42，保留原step5000调度。
 
-示例需要外置step1000完整恢复状态，不能用42K最终权重替代。它不是从零逐位复现既有42K的命令，不包含当前homo/hetero消融。完整`torchrun`模板见[训练教程](docs/USAGE.zh-CN.md#7-pytorch四卡训练)。
+示例需要外置step1000完整恢复状态，不能用SpaGenX推理权重替代。它不是从零逐位复现既有SpaGenX权重的命令，不包含当前homo/hetero消融。完整`torchrun`模板见[训练教程](docs/USAGE.zh-CN.md#7-pytorch四卡训练)。
 
 ## 输出命名
 

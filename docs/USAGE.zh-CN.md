@@ -85,7 +85,7 @@ repository/
 ├── configs/
 ├── bundle_config.json          # 本地配置，不提交GitHub
 └── external_assets/            # 外部获取，不提交GitHub
-    ├── SpaGenX_current42k.pt
+    ├── SpaGenX_weights.pt
     ├── uni2h/pytorch_model.bin
     ├── gene_to_program_m16_overlay.pt
     ├── global_gene_vocab.tsv
@@ -100,13 +100,13 @@ repository/
 cp configs/bundle.example.json bundle_config.json
 ```
 
-用编辑器修改`bundle_config.json`中的`paths`。路径可以相对仓库根目录，也可以是绝对路径。保持`model_code`指向`inference/m2_v3_model.py`，`preprocess_code`指向`preprocessing/step1_extract_uni2h_features.py`。不要修改哈希值来绕过权重检查。
+用编辑器修改`bundle_config.json`中的`paths`。路径可以相对仓库根目录，也可以是绝对路径。保持`model_code`指向`inference/spagenx_model.py`，`preprocess_code`指向`preprocessing/step1_extract_uni2h_features.py`。不要修改哈希值来绕过权重检查。
 
 当前正式身份：
 
 | 资产 | SHA256 |
 | --- | --- |
-| SpaGenX-current42K | `0bcb29527826a54f6be4ffd1e9140fc35167d6b48b9ced5ff21ab98e60cc7603` |
+| SpaGenX权重 | `0bcb29527826a54f6be4ffd1e9140fc35167d6b48b9ced5ff21ab98e60cc7603` |
 | UNI2-h | `6e077eda234bebc595868d918d3458d9dd32a050199b0ff04443b2f46a0a3b1e` |
 
 其余冻结资产哈希见`docs/external_assets.json`。文件名相同不代表内容相同。
@@ -193,7 +193,7 @@ CUDA_VISIBLE_DEVICES=4 python inference/spagenx_cli.py --bundle . infer \
 
 对缺少MPP的图片，在第一条命令补`--mpp <真实值>`。已有可信特征及匹配邻域时，只运行第二条命令；不要为了套用此说明而重新建图。
 
-推理固定：FP32、`global_step=42000`、gene bias开启、tech_zero、空表达prompt并显式disable_prompt。`gene-chunk`是计算分块，不是只预测前256基因。脚本不会根据效果改基因，不会自动训练模型。
+推理使用冻结的SpaGenX权重配置：FP32、gene bias开启、tech_zero、空表达prompt并显式disable_prompt，内部调度由实现锁定。`gene-chunk`是计算分块，不是只预测前256基因。脚本不会根据效果改基因，不会自动训练模型。
 
 ## 5. 输出与读取结果
 
@@ -236,7 +236,7 @@ PY
 
 这是模型原生raw-counts-log1p尺度预测，不是实测RNA、TPM或已校准的绝对分子计数。不要未经验证直接反变换并当作真实计数。图像patch也不等同于分割后的单细胞。查询可用、训练覆盖和逐基因可靠性是不同概念。
 
-`inference.json`记录权重身份、42K/no_prompt/gene bias状态、输入哈希、器官、精度及分块参数。保存它与图像、MPP、基因顺序的来源记录，以便追溯。
+`inference.json`记录SpaGenX权重身份、no_prompt/gene bias状态、输入哈希、器官、精度及分块参数。保存它与图像、MPP、基因顺序的来源记录，以便追溯。
 
 ## 6. 研究数据预处理
 
@@ -290,7 +290,7 @@ python preprocessing/run.py --stage hvg384 --config configs/preprocessing.local.
 
 需要完整外置feature store、校正gene chunks、rowmap、原train/val划分、typed-neighbor overlay、Program映射及active-row HVG384。正式来源为960张训练切片、63张验证切片；历史182张test不是最新162张表达Benchmark。
 
-当前示例是**恢复/继续训练合同**，还需要step1000完整状态（模型、优化器及恢复信息）。缺少该状态时不能用42K最终权重冒充它。代码目录存在，不等于完整训练沿革可以从零复现。
+当前示例是**恢复/继续训练合同**，还需要step1000完整状态（模型、优化器及恢复信息）。缺少该状态时不能用SpaGenX推理权重冒充它。代码目录存在，不等于完整训练沿革可以从零复现。
 
 ### 7.2 推荐的配置化命令
 
@@ -317,7 +317,7 @@ export OUT=/external/spagenx_runs/new_training_001
 
 CUDA_VISIBLE_DEVICES=4,5,6,7 torchrun \
   --standalone --nnodes=1 --nproc_per_node=4 \
-  training/run_m2_v3_recovery_section.py \
+  training/train_spagenx.py \
   --rowmap_root "$DATA_ROOT/rowmap" \
   --v3_split_root "$DATA_ROOT/split" \
   --feature_store "$DATA_ROOT/features.pt" \
@@ -340,11 +340,11 @@ CUDA_VISIBLE_DEVICES=4,5,6,7 torchrun \
   --resume_global_step 1000 --output_root "$OUT"
 ```
 
-`max_steps`与恢复global step必须按真实训练状态解释，不是把模型标记为42K的开关。当前代码未添加新的学习率调度，也未替换原训练验证指标。若要改训练预算、验证PCC或模型结构，应另立实验合同。
+`max_steps`与恢复global step必须按真实训练状态解释，不是把新模型标记为已发布SpaGenX权重的开关。当前代码未添加新的学习率调度，也未替换原训练验证指标。若要改训练预算、验证PCC或模型结构，应另立实验合同。
 
 ### 7.4 训练产物
 
-按启用选项可保存`last_checkpoint.pt`、`last_full_state_checkpoint.pt`、`best_per_gene_pcc_checkpoint.pt`、`eval_metrics.tsv`等。完整状态文件与仅模型权重用途不同。小型Smoke通过不代表训练已收敛，更不代表新训练可直接称作current42K。
+按启用选项可保存`last_checkpoint.pt`、`last_full_state_checkpoint.pt`、`best_per_gene_pcc_checkpoint.pt`、`eval_metrics.tsv`等。完整状态文件与仅模型权重用途不同。小型Smoke通过不代表训练已收敛，也不代表新训练复现了既有SpaGenX权重。
 
 ## 8. 自检与复现边界
 
@@ -357,13 +357,13 @@ python training/run.py --help
 
 当前六项合成测试涵盖邻域padding、基因身份、实测零/身份合并、行索引约定、MPP/空白图/输出冲突和patch上限。测试不依赖真实图像或权重，但需要已安装依赖。
 
-`docs/validation.json`记录打包时远端私有资产验证：原生训练函数AST一致、step0/5000/42000等价性及真实42K小样本误差0。真实输入、参考预测和权重未随包分发，第三方仅凭当前代码包不能重做该私有测试。
+`docs/validation.json`记录打包时远端私有资产验证：原生训练函数AST一致、调度边界等价性及SpaGenX权重小样本误差0。真实输入、参考预测和权重未随包分发，第三方仅凭当前代码包不能重做该私有测试。
 
 ## 9. 常见问题
 
 | 报错/现象 | 处理 |
 | --- | --- |
-| `M2_WEIGHT_SHA256` / `UNI2_WEIGHT_SHA256` | 核对文件来源和SHA256；不要修改代码跳过检查 |
+| 权重SHA256不匹配 | 核对SpaGenX或UNI2-h文件来源和SHA256；不要修改代码跳过检查 |
 | `CHECKPOINT_STEP` / `PROGRAM_BUFFER_IDENTITY` | 权重或Program映射不匹配；使用同一冻结版本 |
 | `MPP_REQUIRED` | 提供可信真实MPP，不随意填0.5 |
 | `NO_VALID_TISSUE_PATCHES` | 检查图像、区域、尺度及白色过滤；不要自动放宽阈值 |
@@ -375,7 +375,7 @@ python training/run.py --help
 | CUDA OOM | 本次失败即停止；检查占卡情况，另起运行并显式记录调整，不静默改协议 |
 | `libopenslide`/动态库加载失败 | 同时核对Python绑定及底层库，参见官方平台安装说明 |
 | `invalid device ordinal` | 检查物理GPU与`CUDA_VISIBLE_DEVICES`后的本地编号 |
-| 缺少恢复checkpoint | 可读训练代码，但不能执行原恢复合同或宣称复现42K |
+| 缺少恢复checkpoint | 可读训练代码，但不能执行原恢复合同或宣称复现SpaGenX权重 |
 
 OOM时可以在明确记录的新运行中用`PATCH_BATCH`、`GENE_CHUNK`调整应用推理分块；这不是本包已验证所有组合的承诺。不要使用不可信用户上传的`.pt`文件，因为该封装使用受信任资产的torch反序列化路径。
 

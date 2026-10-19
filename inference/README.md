@@ -1,6 +1,6 @@
 # Frozen expression inference
 
-`spagenx_cli.py` supports WSI preprocessing and inference from trusted, matching feature/neighbor files. The current protocol fixes step42000, no expression prompt, gene bias enabled and tech_zero.
+`spagenx_cli.py` supports WSI preprocessing and inference from trusted, matching feature/neighbor files. Inference uses the frozen SpaGenX weight configuration, no expression prompt, gene bias enabled and tech_zero.
 
 ```bash
 python inference/spagenx_cli.py --help

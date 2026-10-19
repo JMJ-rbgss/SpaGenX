@@ -1,6 +1,6 @@
 # Native SpaGenX training
 
-The native model, shared modules and recovery trainer preserve the current42K implementation. The launcher uses PyTorch distributed execution with one process per configured GPU.
+The native model, shared modules and recovery trainer preserve the SpaGenX implementation. The launcher uses PyTorch distributed execution with one process per configured GPU.
 
 ```bash
 python training/run.py --config configs/train.local.json

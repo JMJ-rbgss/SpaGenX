@@ -79,19 +79,19 @@
   },
   {
     "target": "training/run_m2_v3_recovery_section.py",
-    "role": "formal current42K lineage",
+    "role": "formal SpaGenX lineage",
     "source_sha256": "9d78cea574a6156e3d6977ba1f09b0decca838ef2d4c289d779bec300684b677",
     "portable_sha256": "4f49a2c5411fd085d6143b607f020b50ad25ffc2acb6b6cba2137a6fa02c1056"
   },
   {
     "target": "training/m2_v3_model.py",
-    "role": "formal current42K lineage",
+    "role": "formal SpaGenX lineage",
     "source_sha256": "c7b340a592ba7e199b9b47bbb160ce8273a340d51e3c426eb75028f9b6483ffa",
     "portable_sha256": "c7b340a592ba7e199b9b47bbb160ce8273a340d51e3c426eb75028f9b6483ffa"
   },
   {
     "target": "training/m_family_common.py",
-    "role": "formal current42K lineage",
+    "role": "formal SpaGenX lineage",
     "source_sha256": "e87507013bd0867889744eed34120d2c57bbd0b6167768d471c8eddd40fd12f4",
     "portable_sha256": "e87507013bd0867889744eed34120d2c57bbd0b6167768d471c8eddd40fd12f4"
   },

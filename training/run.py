@@ -9,7 +9,7 @@ def main():
  env=os.environ.copy();env['SPAGENX_DATA_ROOT']=str(Path(c['data_root']).resolve());env['CUDA_VISIBLE_DEVICES']=','.join(map(str,c['gpus']))
  for flag in ['--rowmap_root','--v3_split_root','--feature_store','--gene_chunk_manifest','--neighbor_overlay','--program_overlay_path','--section_hvg_path']:
   assert flag in args,flag
- cmd=[sys.executable,'-m','torch.distributed.run','--standalone','--nnodes=1','--nproc_per_node='+str(len(c['gpus'])),str(Path(__file__).with_name('run_m2_v3_recovery_section.py'))]+args
+ cmd=[sys.executable,'-m','torch.distributed.run','--standalone','--nnodes=1','--nproc_per_node='+str(len(c['gpus'])),str(Path(__file__).with_name('train_spagenx.py'))]+args
  print(shlex.join(cmd))
  if not a.execute:print('DRY_RUN: no training or directory creation');return
  for flag in ['--rowmap_root','--v3_split_root','--feature_store','--gene_chunk_manifest','--neighbor_overlay','--program_overlay_path','--section_hvg_path','--resume_checkpoint']:

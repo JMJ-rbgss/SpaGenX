@@ -73,7 +73,7 @@ Use this local layout or configure absolute paths:
 
 ```text
 external_assets/
-├── SpaGenX_current42k.pt
+├── SpaGenX_weights.pt
 ├── uni2h/pytorch_model.bin
 ├── gene_to_program_m16_overlay.pt
 ├── global_gene_vocab.tsv
@@ -126,7 +126,7 @@ CUDA_VISIBLE_DEVICES=4 python inference/spagenx_cli.py --bundle . infer \
   --patch-batch 16 --gene-chunk 256 --device cuda:0
 ```
 
-Inference fixes step 42,000, gene bias enabled, tech_zero, an empty expression prompt and explicit prompt disable. Gene chunking controls computation, not which requested genes are returned. Trusted existing features and matching neighborhoods can be used directly without rebuilding the graph.
+Inference uses the fixed SpaGenX weight configuration, with gene bias enabled, tech_zero, an empty expression prompt and explicit prompt disable. Gene chunking controls computation, not which requested genes are returned. Trusted existing features and matching neighborhoods can be used directly without rebuilding the graph.
 
 #### 5. Automatic two-stage execution
 
@@ -192,7 +192,7 @@ python training/run.py --config configs/train.local.json --execute
 
 The launcher uses `python -m torch.distributed.run`, one process per configured GPU. The original contract uses four GPUs, per-GPU batch 64, BF16, AdamW with learning rate/weight decay 1e-4, gradient clip 1.0, gene chunk 2048 and seed 42. Native training prompt/gene-bias scheduling starts at step 5000.
 
-The example is a recovery/continuation contract requiring an external step 1000 full-state checkpoint, which is not included. Final 42K inference weights cannot replace that state. A fresh run is not guaranteed to reproduce the existing 42K checkpoint or its history. The separate homo/hetero ablation experiment is not included.
+The example is a recovery/continuation contract requiring an external step 1000 full-state checkpoint, which is not included. SpaGenX inference weights cannot replace that state. A fresh run is not guaranteed to reproduce the supplied SpaGenX weights or their training history. The separate homo/hetero ablation experiment is not included.
 
 A full four-GPU `torchrun` template is in the [training tutorial](docs/USAGE.zh-CN.md#7-pytorch四卡训练). Native commands start training immediately, unlike the preview wrapper. The trainer retains its historical validation metric rather than silently substituting the latest section-HVG50 benchmark metric.
 
@@ -241,7 +241,7 @@ python preprocessing/run.py --help
 python training/run.py --help
 ```
 
-Tests cover synthetic identity/mask handling, measured zeros, neighborhood padding, preprocessing boundaries and preview safety. [Packaging validation](docs/validation.json) additionally records private native/current42K input checks. These are technical checks, not full-training reproduction or clinical validation.
+Tests cover synthetic identity/mask handling, measured zeros, neighborhood padding, preprocessing boundaries and preview safety. [Packaging validation](docs/validation.json) additionally records private native/SpaGenX weight input checks. These are technical checks, not full-training reproduction or clinical validation.
 
 For missing MPP, ambiguous genes, feature/neighbor mismatch, checkpoint errors or OOM, use the [troubleshooting table](docs/USAGE.zh-CN.md#9-常见问题). Do not silently change thresholds, sample patches or replace weights. `.pt` inputs must be trusted files, not arbitrary user uploads.
 

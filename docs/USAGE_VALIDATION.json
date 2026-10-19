@@ -8,5 +8,5 @@
   "tests": ["default preview does not execute models", "explicit dry-run does not execute models", "existing output directory rejected", "missing bundle configuration rejected"],
   "new_training_started": false,
   "new_inference_executed": false,
-  "notes": "These checks cover the added orchestration and documentation, not a new real-image end-to-end run. Prior native/current42K validation is recorded separately in validation.json. Original transfer checksums apply to the earlier snapshot, not these documentation additions."
+  "notes": "These checks cover the added orchestration and documentation, not a new real-image end-to-end run. Prior native/SpaGenX weight validation is recorded separately in validation.json. Original transfer checksums apply to the earlier snapshot, not these documentation additions."
 }
