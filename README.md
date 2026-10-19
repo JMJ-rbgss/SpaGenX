@@ -4,9 +4,7 @@
 
 ![SpaGenX overview](assets/SpaGenX_overview.png)
 
-SpaGenX predicts spatial gene expression from H&E histology using frozen UNI2-h representations, gene and curated gene-set context, organ/technology metadata, and structured spatial neighborhoods. The native model integrates a center patch with candidate, homogeneous and heterogeneous neighborhood evidence.
-
-This repository provides data-preparation code, the native training implementation and frozen-checkpoint inference tools for the 17-organ SpaGenX model. Current inference uses the checkpoint selected at step 42,000, with expression prompts disabled and gene bias enabled. The prompt pathway in the overview does not mean that measured expression is supplied at inference.
+SpaGenX is a histology-based framework for inferring spatial gene expression from routine H&E slides and enabling downstream analyses of molecular phenotypes, spatial expression patterns, and patient outcomes.
 
 [中文说明](README.zh-CN.md) · [完整PyTorch命令教程](docs/USAGE.zh-CN.md) · [Data contracts](docs/DATA_CONTRACT.md)
 
@@ -18,7 +16,7 @@ The original training configuration uses four GPUs, per-GPU batch 64 and BF16. I
 
 ## Installation
 
-Run commands from the repository root. This repository is private and requires authorized GitHub access.
+Run commands from the repository root.
 
 ```bash
 git clone https://github.com/JMJ-rbgss/SpaGenX.git
@@ -249,9 +247,9 @@ For missing MPP, ambiguous genes, feature/neighbor mismatch, checkpoint errors o
 
 ## Data & model availability
 
-This private repository distributes code and the overview figure, not raw datasets, patient-level data, pretrained weights, gene dictionaries, Program tables or prediction tensors. Obtain approved assets separately and keep them outside Git. SpaGenX weight download links have not yet been published.
+This repository distributes code and the overview figure, not raw datasets, patient-level data, pretrained weights, gene dictionaries, Program tables or prediction tensors. Obtain approved assets separately and keep them outside Git. SpaGenX weight download links have not yet been published.
 
-UNI2-h is an external frozen encoder with its own access and license conditions. Availability of a gene ID does not establish training supervision or reliability in every organ. The WSI application protocol is separate from the original expression benchmark. This project is for research, not clinical diagnosis.
+UNI2-h is an external frozen encoder with its own access and license conditions. Availability of a gene ID does not establish training supervision or reliability in every organ. The WSI application protocol is separate from the original expression benchmark.
 
 ## Citation
 

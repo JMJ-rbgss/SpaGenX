@@ -4,9 +4,7 @@
 
 ![SpaGenX框架总览](assets/SpaGenX_overview.png)
 
-SpaGenX使用冻结UNI2-h图像表示，结合目标基因、整理后的基因集上下文、器官/技术元数据以及candidate、homo、hetero空间邻域预测基因表达。仓库提供数据预处理、原生训练与冻结推理实现。
-
-当前推理使用step42000的正式权重，禁用表达prompt并开启gene bias。图示中的prompt通路不表示推理需要真实表达。
+SpaGenX是一个基于组织学图像的框架，能够从常规H&E切片推断空间基因表达，并支持分子表型、空间表达模式及患者结局的下游分析。
 
 [English README](README.md) · [完整PyTorch命令教程](docs/USAGE.zh-CN.md) · [数据合同](docs/DATA_CONTRACT.md)
 
@@ -16,7 +14,7 @@ SpaGenX使用冻结UNI2-h图像表示，结合目标基因、整理后的基因�
 
 ## 安装
 
-私有仓库需要已授权账号。以下命令从仓库根目录执行：
+以下命令从仓库根目录执行：
 
 ```bash
 git clone https://github.com/JMJ-rbgss/SpaGenX.git
@@ -158,7 +156,7 @@ python tests/test_automation.py
 
 ## 数据与模型可用性
 
-仓库分发代码和框架图，不含患者数据、原始图像、表达、权重、词典、Program表或预测张量。外部资产需另行获取并留在Git之外。词典支持不等于监督覆盖或逐基因可靠性。仅用于科研，不用于临床诊断。
+仓库分发代码和框架图，不含患者数据、原始图像、表达、权重、词典、Program表或预测张量。外部资产需另行获取并留在Git之外。词典支持不等于监督覆盖或逐基因可靠性。
 
 ## 引用
 
