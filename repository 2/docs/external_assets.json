@@ -1,0 +1,26 @@
+{
+  "m2_checkpoint": {
+    "sha256": "0bcb29527826a54f6be4ffd1e9140fc35167d6b48b9ced5ff21ab98e60cc7603",
+    "distributed": false
+  },
+  "uni2_checkpoint": {
+    "sha256": "6e077eda234bebc595868d918d3458d9dd32a050199b0ff04443b2f46a0a3b1e",
+    "distributed": false
+  },
+  "active_row_hvg384": {
+    "sha256": "38392906e45d716ddccf6d7907090df180c9ce896a68ed022bbd39b89b83ddcf",
+    "distributed": false
+  },
+  "program_overlay": {
+    "sha256": "b7d9c1637cd83bb35189fac7592a041673091a49eb66b5dee5febb6b1abbf38f",
+    "distributed": false
+  },
+  "vocab": {
+    "sha256": "a8e4c32f3578e09e3f40964b11336e77c312e4b82170f137e9b085ae67089bdb",
+    "distributed": false
+  },
+  "codebooks": {
+    "sha256": "797da014d5669e4806c694b7217529a25ec8e49add5a7b3a8b9c0703c0209eb7",
+    "distributed": false
+  }
+}

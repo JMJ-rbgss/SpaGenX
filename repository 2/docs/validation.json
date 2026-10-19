@@ -1,0 +1,42 @@
+{
+  "status": "READY_FOR_LOCAL_REVIEW",
+  "formal_training_started": false,
+  "gpu_used": false,
+  "checks": {
+    "syntax": "PASS",
+    "synthetic_and_boundary": "PASS",
+    "launcher_dry_runs": "PASS",
+    "trainer_function_AST_identity": "PASS",
+    "native_equivalence_and_schedule": [
+      {
+        "step": 0,
+        "max_abs_error": 0.0
+      },
+      {
+        "step": 5000,
+        "max_abs_error": 0.0
+      },
+      {
+        "step": 42000,
+        "max_abs_error": 0.0
+      }
+    ],
+    "private_current42k_equivalence": {
+      "atol": 0.0001,
+      "rtol": 0.0001,
+      "max_abs_error": 0.0,
+      "parameters_unchanged": true,
+      "no_sample_data_exported": true
+    },
+    "public_scan": "PASS"
+  },
+  "versions": {
+    "torch": "2.6.0",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "pandas": "2.1.4",
+    "timm": "0.9.16",
+    "anndata": "0.10.8",
+    "Pillow": "11.3.0"
+  }
+}

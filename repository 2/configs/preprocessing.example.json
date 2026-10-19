@@ -1,0 +1,14 @@
+{
+  "data_root": "/external/spagenx_data",
+  "gpus": [4],
+  "stages": {
+    "discover": ["--data_root", "/external/spagenx_data", "--output_tsv", "runs/new_inventory.tsv"],
+    "features": ["--inventory_tsv", "/external/spagenx_data/inventory.tsv", "--output_dir", "runs/new_feature_shards", "--checkpoint", "/external/spagenx_data/uni2h/pytorch_model.bin", "--launch_gpus", "4", "--batch_size", "128", "--patch_size", "224", "--target_mpp", "0.5", "--white_gray_thresh", "205", "--white_ratio_thresh", "0.8"],
+    "merge": ["--shard_dir", "/external/spagenx_data/feature_shards", "--output_pt", "runs/new_features.pt", "--manifest_tsv", "runs/new_feature_manifest.tsv"],
+    "expression": ["--inventory_tsv", "/external/spagenx_data/inventory.tsv", "--split_csv", "/external/spagenx_data/split.csv", "--output_root", "runs/new_expression", "--num_workers", "16"],
+    "rowmap": ["--master_feature_store", "/external/spagenx_data/features.pt", "--feature_manifest_tsv", "/external/spagenx_data/feature_manifest.tsv", "--gene_chunks_manifest_tsv", "/external/spagenx_data/gene_label_chunks_manifest.tsv", "--split_csv", "/external/spagenx_data/split.csv", "--output_root", "runs/new_rowmap"],
+    "neighbors": ["--rowmap_root", "/external/spagenx_data/rowmap", "--feature_store_pt", "/external/spagenx_data/features.pt", "--feature_manifest_tsv", "/external/spagenx_data/feature_manifest.tsv", "--output_root", "runs/new_neighbors", "--device", "cuda:0"],
+    "canonical": ["--out", "runs/new_canonical", "--split", "/external/spagenx_data/section_split.tsv", "--manifest", "/external/spagenx_data/gene_label_chunks_manifest.tsv", "--vocab", "/external/spagenx_data/global_gene_vocab.tsv", "--rowmap", "/external/spagenx_data/rowmap", "--h5ad-root", "/external/spagenx_data/h5ad", "--program-root", "/external/spagenx_data/program_source"],
+    "hvg384": ["--output-dir", "runs/new_hvg384", "--manifest", "/external/spagenx_data/corrected_gene_label_chunks_manifest.tsv", "--rowmap-root", "/external/spagenx_data/rowmap", "--split-root", "/external/spagenx_data/split", "--old-hvg", "/external/spagenx_data/old_hvg384.pt", "--workers", "16"]
+  }
+}

@@ -1,0 +1,128 @@
+[
+  {
+    "target": "preprocessing/step0_sample_discovery.py",
+    "role": "native CLI",
+    "source_sha256": "1580b81d19837ac09edf07ac0210277becf600d1ec19dc17dc12f813533a1f52",
+    "portable_sha256": "1580b81d19837ac09edf07ac0210277becf600d1ec19dc17dc12f813533a1f52"
+  },
+  {
+    "target": "preprocessing/step1_extract_uni2h_features.py",
+    "role": "native CLI",
+    "source_sha256": "7a52fa02fe1f4c5f08d5c6340b1510309cd4390f5f1fcdd190ebc3602f731f8d",
+    "portable_sha256": "7577a8eb681432b3e2b6a5f43d63e27a059ed7fefc7f1e06c99aa4d12b4bfae7"
+  },
+  {
+    "target": "preprocessing/step1_merge_features.py",
+    "role": "native CLI",
+    "source_sha256": "f6560ee4c547745f293d67fd99619baffbe6cf2570947e13da6e00fb8c94d9a1",
+    "portable_sha256": "f6560ee4c547745f293d67fd99619baffbe6cf2570947e13da6e00fb8c94d9a1"
+  },
+  {
+    "target": "preprocessing/step2_gene_expression_preprocessing.py",
+    "role": "native CLI",
+    "source_sha256": "be3868aca9082579776f827b83541953b2388c0031051b5cd8800db913ed92dd",
+    "portable_sha256": "be3868aca9082579776f827b83541953b2388c0031051b5cd8800db913ed92dd"
+  },
+  {
+    "target": "preprocessing/step2_add_organs.py",
+    "role": "historical dataset construction",
+    "source_sha256": "74263bd2f88980904867cb9a2e9eae25fcadbf16a425a7d4e6633630414ebca9",
+    "portable_sha256": "89111c876463b6f95d227bd5bda3b6d0e0cf91226f72c6a5c21f44cb834253e8"
+  },
+  {
+    "target": "preprocessing/step3_build_rowmap.py",
+    "role": "native CLI",
+    "source_sha256": "385f6a37202c11fb2f1ba13486134d54d53dc7b763778ff292e4d1e2789e252c",
+    "portable_sha256": "385f6a37202c11fb2f1ba13486134d54d53dc7b763778ff292e4d1e2789e252c"
+  },
+  {
+    "target": "preprocessing/step3_build_rowmap_threaded.py",
+    "role": "native CLI",
+    "source_sha256": "947c59e439eadef819a1f7c23a139ef892b23f52366888f263639749a103ce7d",
+    "portable_sha256": "947c59e439eadef819a1f7c23a139ef892b23f52366888f263639749a103ce7d"
+  },
+  {
+    "target": "preprocessing/step4_build_m1_m2_overlays.py",
+    "role": "native CLI",
+    "source_sha256": "44ab7a7757739f72b32db7c82656e117b9d187ae8f333b42369eadd29bb10f2a",
+    "portable_sha256": "44ab7a7757739f72b32db7c82656e117b9d187ae8f333b42369eadd29bb10f2a"
+  },
+  {
+    "target": "preprocessing/validate_overlays_17organs.py",
+    "role": "native CLI",
+    "source_sha256": "4771cd304210796a4e20b3bfc1f79062386262a2546cd735ed287901f46f4666",
+    "portable_sha256": "8161443c6d4c8d6305fbc691ddac68f92e14af95d1ddb5c9da3a8c54fda3b53a"
+  },
+  {
+    "target": "preprocessing/rebuild_section_hvg384_17organs.py",
+    "role": "historical dataset construction",
+    "source_sha256": "1ee6d1651557a01b7c4833db7c967e8159d6e7310c4d13079dffed85be15bdb1",
+    "portable_sha256": "9d6f70e226f8ff33ebf8af9cdb172143ebdddf9819873b50537763b7d4bf738f"
+  },
+  {
+    "target": "preprocessing/fix_m2_gene_identity_assets.py",
+    "role": "canonical identity and Program M16 migration",
+    "source_sha256": "c302021d7a32523819e82efb0d0692a2fa3eb28bc5c41047be265dcd6716eeeb",
+    "portable_sha256": "c5a83076ac8d0335be681e24c0fed7897083e7690ea39a531bfb9f1fd5db4cfd"
+  },
+  {
+    "target": "tests/test_original_gene_identity.py",
+    "role": "original unit tests",
+    "source_sha256": "df5dc87270f08c6c7f54c1f50d500fbcbe967ba43959dcad6d32456a78f7c04a",
+    "portable_sha256": "1c61b0e454a4b748ebacdd959822fbdd165856a26ade2affec32fe349f16712c"
+  },
+  {
+    "target": "preprocessing/rebuild_active_row_hvg384.py",
+    "role": "actual training active-row HVG384",
+    "source_sha256": "3aead4127d6b0c41e93b6703d6a727ff0484f9d8f11b7af439c2a1a89c2c0f1d",
+    "portable_sha256": "3aead4127d6b0c41e93b6703d6a727ff0484f9d8f11b7af439c2a1a89c2c0f1d"
+  },
+  {
+    "target": "training/run_m2_v3_recovery_section.py",
+    "role": "formal current42K lineage",
+    "source_sha256": "9d78cea574a6156e3d6977ba1f09b0decca838ef2d4c289d779bec300684b677",
+    "portable_sha256": "4f49a2c5411fd085d6143b607f020b50ad25ffc2acb6b6cba2137a6fa02c1056"
+  },
+  {
+    "target": "training/m2_v3_model.py",
+    "role": "formal current42K lineage",
+    "source_sha256": "c7b340a592ba7e199b9b47bbb160ce8273a340d51e3c426eb75028f9b6483ffa",
+    "portable_sha256": "c7b340a592ba7e199b9b47bbb160ce8273a340d51e3c426eb75028f9b6483ffa"
+  },
+  {
+    "target": "training/m_family_common.py",
+    "role": "formal current42K lineage",
+    "source_sha256": "e87507013bd0867889744eed34120d2c57bbd0b6167768d471c8eddd40fd12f4",
+    "portable_sha256": "e87507013bd0867889744eed34120d2c57bbd0b6167768d471c8eddd40fd12f4"
+  },
+  {
+    "target": "docs/launch_continue_full_4ddp.sh.txt",
+    "role": "archival launch; not executable recipe",
+    "source_sha256": "3de2c6f7da19151b459d0398baad256bdadcc39e9530f772880fa041d2b2719a",
+    "portable_sha256": "4468da499c2650b31fb83731a49c600ac9421d2efffb3e431485df7552d16fbc"
+  },
+  {
+    "target": "docs/launch_full_4ddp_resume.sh.txt",
+    "role": "archival launch; not executable recipe",
+    "source_sha256": "1aecb040de0f6d1f46fa93b287094f2e255d407c9bb214724591cf3dbb332579",
+    "portable_sha256": "65ed19eeb1ff8906b625e0900e388f9f8ff1349b25de8cdfaf08510743b6277f"
+  },
+  {
+    "target": "docs/launch_full_4ddp_scratch.sh.txt",
+    "role": "archival launch; not executable recipe",
+    "source_sha256": "dfc048ac8a1da4b773727b6947a1a3aa480ff631a15a04704cdcde3d36f6a11c",
+    "portable_sha256": "1b5939490e18a744b38e3a0d062ac00d328e3a0ba6ad5722050ca01d010d4664"
+  },
+  {
+    "target": "inference/experiment_pseudobulk_archive.py",
+    "role": "experimental frozen-feature protocol; archival only",
+    "source_sha256": "20dbf63df7584229170ea0b67f352194e5a757147ac0d494da8d9aa95a820469",
+    "portable_sha256": "aa9b16a79bc2ae2d3e2d5c23bc36c082cae290f1656691db1b91e90fecd7dd14"
+  },
+  {
+    "target": "inference/spagenx_cli.py",
+    "role": "hostA verified WSI application wrapper",
+    "source_sha256": "6efc18e0806aa147f78050a53adb4a5472473b4ce92391fd9c6171550668ec47",
+    "portable_sha256": "afe080d213fd194d2418479aa575e8a2a9aabc26ff80af1919f3d142e3806e2f"
+  }
+]

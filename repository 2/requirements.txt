@@ -1,0 +1,11 @@
+numpy==1.26.4
+scipy==1.13.1
+pandas==2.1.4
+torch==2.6.0
+timm==0.9.16
+anndata
+h5py
+Pillow
+openslide-python
+# Install the OS OpenSlide shared library separately.
+# Python 3.9; select the appropriate official PyTorch CUDA build explicitly.
