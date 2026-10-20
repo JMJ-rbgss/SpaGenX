@@ -8,4 +8,4 @@ python training/run.py --config configs/train.local.json
 python training/run.py --config configs/train.local.json --execute
 ```
 
-The supplied example requires an external step1000 full-state recovery checkpoint. Final inference weights cannot substitute for optimizer/recovery state. [Training instructions and torchrun template](../docs/USAGE.zh-CN.md#7-pytorch四卡训练).
+The example continues from an external step1000 full-state checkpoint containing model parameters, optimizer state and recovery metadata. Prepare it separately from inference weights. See [training instructions and torchrun template](../docs/USAGE.zh-CN.md#7-pytorch四卡训练).

@@ -8,7 +8,7 @@ SpaGenX uses organ and technology metadata, 1536-dimensional frozen UNI2-h image
 
 Corrected gene chunks must preserve `target_genes_raw_local_csr`, `observed_gene_mask_local`, and `local_to_global_gene_idx`, with explicit spot/row identities and finite raw-log1p values. A measured zero remains a supervised zero; absence of a probe is not a zero. Canonical ID collisions are handled by the original correction code, not fuzzy matching. Rowmap lookup must retain the stored row order and local-to-global identities.
 
-The actual active-row HVG384 builder uses only rows present in the rowmap, masks unobserved genes, ranks variance with global-ID tie breaking, and preserves its original384-gene requirement. The source asset has1205 sections; training sampling queries only the original training subset. Do not substitute test HVG50, a new organ-level web panel, or the earlier full-chunk HVG list.
+The active-row HVG384 builder uses rows present in the rowmap, masks unobserved genes, and ranks variance with global-ID tie breaking to select 384 genes per section. Training sampling queries the training subset defined by the split files.
 
 ## Required external asset schemas
 
@@ -18,8 +18,8 @@ The actual active-row HVG384 builder uses only rows present in the rowmap, masks
 - Training: original train/val indices, section splits, feature store, corrected chunk manifest, rowmap, typed-neighbor overlay and active-row HVG384.
 - Experimental inference: trusted per-slide`features` (`N×1536`), patch coordinates and hash, plus candidate/homo/hetero local indices, validity masks, distances and cosine features with identical row identity.
 
-External assets are not granted redistribution rights by this schema documentation. Exact verified hashes are listed separately. Additional historical migration inputs include source h5ad files and original Program membership tables; these are not fabricated or bundled.
+Verify external assets against the hashes in `external_assets.json` and follow their applicable access and licensing terms. Historical migrations additionally require source h5ad files and original Program membership tables.
 
 ## Protocol differences
 
-The native training overlay retains its original distance units and padding. The WSI application wrapper builds a new full-slide grid and normalized slide-local distances; it must not be advertised as reproducing training sampling. Frozen experimental overlays can be passed directly to inference without reconstruction. Inference uses no expression prompt and the frozen SpaGenX weight configuration; training retains its native step5000 prompt/gene-bias schedule. No new PCC evaluation or alternative early-stopping metric is introduced by this release.
+The native training overlay uses spot-based sampling, stored distance units and padding. The WSI application wrapper uses a full-slide grid and normalized slide-local distances. Existing experimental overlays can be passed directly to inference. Inference uses no expression prompt and the SpaGenX weight configuration; training uses its native step5000 prompt/gene-bias schedule and validation metric.
