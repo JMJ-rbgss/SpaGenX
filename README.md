@@ -2,7 +2,7 @@
 
 ## Spatial gene expression prediction from histology with structured spatial context
 
-[![SpaGenX overview](assets/SpaGenX_overview.png)](assets/SpaGenX_overview.pdf)
+![SpaGenX overview](assets/SpaGenX_overview.png)
 
 SpaGenX is a histology-based framework for inferring spatial gene expression from routine H&E slides and enabling downstream analyses of molecular phenotypes, spatial expression patterns, and patient outcomes.
 
