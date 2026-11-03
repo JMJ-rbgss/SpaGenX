@@ -176,7 +176,7 @@ python preprocessing/run.py --stage hvg384 --config configs/preprocessing.local.
 
 Add `--execute` to an individual command after checking prerequisites and fresh outputs. Inspect its result and configure later inputs explicitly. Canonical correction requires manifests, rowmap and source Program tables; active-row HVG384 rebuilding requires corrected chunks, rowmap and frozen splits.
 
-Historical 17-organ extension, older HVG migration and site-specific experiment scripts are protected source archives. They originally used in-place migrations; do not remove their guards or run them on source data.
+Historical 17-organ extension and older HVG migration scripts are protected source archives. They originally used in-place migrations; do not remove their guards or run them on source data.
 
 #### 3. Launch native training with PyTorch
 
@@ -192,7 +192,7 @@ python training/run.py --config configs/train.local.json --execute
 
 The launcher uses `python -m torch.distributed.run`, one process per configured GPU. The original contract uses four GPUs, per-GPU batch 64, BF16, AdamW with learning rate/weight decay 1e-4, gradient clip 1.0, gene chunk 2048 and seed 42. Native training prompt/gene-bias scheduling starts at step 5000.
 
-The example continues training from an external step 1000 full-state checkpoint containing model parameters, optimizer state and recovery metadata. Provide this checkpoint separately from the SpaGenX inference weights.
+The default configuration starts at step 0 with seed-42 random initialization; it does not load a checkpoint. To resume an interrupted run, copy `configs/train.resume.example.json`, set the full-state checkpoint path and its saved step, and choose a fresh output directory. Full-state resume uses checkpoints written by this training entry point with the same GPU count.
 
 A full four-GPU `torchrun` template is in the [training tutorial](docs/USAGE.zh-CN.md#7-pytorch四卡训练). Native commands start training immediately; the configuration wrapper previews commands by default. Validation follows the metric implemented in the native trainer.
 

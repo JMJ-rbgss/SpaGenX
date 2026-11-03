@@ -25,11 +25,11 @@ def asset(root,key):
  p=Path(config(root)['paths'][key]);return p if p.is_absolute() else Path(root)/p
 def module(path,name):
  spec=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(spec);sys.modules[name]=m;spec.loader.exec_module(m);return m
-def load_m2(root,device):
- cfg=config(root);p=asset(root,'m2_weights');require(sha(p)==cfg['m2_sha256'],'M2_WEIGHT_SHA256')
- sys.path.insert(0,str(asset(root,'model_code').parent));m=module(asset(root,'model_code'),'portable_m2_definition')
+def load_spagenx(root,device):
+ cfg=config(root);p=asset(root,'spagenx_weights');require(sha(p)==cfg['spagenx_sha256'],'SpaGenX_WEIGHT_SHA256')
+ sys.path.insert(0,str(asset(root,'model_code').parent));m=module(asset(root,'model_code'),'portable_spagenx_definition')
  ov=torch.load(asset(root,'program'),map_location='cpu',weights_only=False)
- model=m.M2Pool32TypedEvidenceRawLog1pV3(n_genes=115055,n_organs=17,n_techs=4,gene_to_program_ids=ov['gene_to_program_ids'],gene_to_program_mask=ov['gene_to_program_mask'],n_programs=256,feature_dim=1536,d_model=512,alpha_init=.1,gene_bias=True,dropout=.1)
+ model=m.SpaGenXModel(n_genes=115055,n_organs=17,n_techs=4,gene_to_program_ids=ov['gene_to_program_ids'],gene_to_program_mask=ov['gene_to_program_mask'],n_programs=256,feature_dim=1536,d_model=512,alpha_init=.1,gene_bias=True,dropout=.1)
  ck=torch.load(p,map_location='cpu',weights_only=False);require(int(ck['step'])==42000,'CHECKPOINT_STEP')
  model.load_state_dict(ck['model'],strict=True)
  for name in ('gene_to_program_ids','gene_to_program_mask'):require(torch.equal(ck['model']['program_prior.'+name],ov[name]),'PROGRAM_BUFFER_IDENTITY:'+name)
@@ -76,7 +76,7 @@ def neighbors(coords,features):
  return out
 def predict(root,features,overlay,gids,organ,device='cpu',batch=16,chunk=256,rows=None):
  torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
- dev=torch.device(device);model=load_m2(root,dev);before=parameter_hash(model)
+ dev=torch.device(device);model=load_spagenx(root,dev);before=parameter_hash(model)
  f=torch.as_tensor(features).float().to(dev);indices=np.arange(len(f)) if rows is None else np.asarray(rows,np.int64);results=[]
  require(f.ndim==2 and f.shape[1]==1536 and torch.isfinite(f).all(),'FEATURE_SHAPE_OR_FINITE')
  for prefix,k in [('candidate',32),('homo',12),('hetero',8)]:
@@ -99,7 +99,7 @@ def predict(root,features,overlay,gids,organ,device='cpu',batch=16,chunk=256,row
    results.append(np.concatenate(pieces,axis=1))
  require(before==parameter_hash(model),'PARAMETERS_CHANGED');del model,f;gc.collect()
  if dev.type=='cuda':torch.cuda.empty_cache()
- return np.concatenate(results),{'global_step':42000,'no_prompt':True,'tech_zero':True,'gene_bias':True,'organ':organ,'precision':'FP32','patch_batch':batch,'gene_chunk':chunk,'parameters_unchanged':True,'checkpoint_sha256':config(root)['m2_sha256']}
+ return np.concatenate(results),{'global_step':42000,'no_prompt':True,'tech_zero':True,'gene_bias':True,'organ':organ,'precision':'FP32','patch_batch':batch,'gene_chunk':chunk,'parameters_unchanged':True,'checkpoint_sha256':config(root)['spagenx_sha256']}
 
 def preprocess(root,image_path,out,mpp=None,max_patches=16000,device='cuda:0'):
  out=Path(out);out.mkdir(parents=True,exist_ok=False);image_path=Path(image_path);model=None;slide=None;small=None

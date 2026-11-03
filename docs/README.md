@@ -9,4 +9,4 @@
 - [Change log](CHANGELOG.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 
-Historical launch text is provenance, not a replacement for the current configuration-based commands.
+Training starts from random initialization by default. Optional full-state resume is configured separately in `configs/train.resume.example.json`.

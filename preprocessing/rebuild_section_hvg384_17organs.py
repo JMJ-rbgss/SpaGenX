@@ -8,7 +8,7 @@ import torch
 BASE = Path((__import__('os').environ.get('SPAGENX_DATA_ROOT', '/external/spagenx_data') + ''))
 RUN = BASE/"new_pipeline_800gb/full_run_firstv1_rawlog1p_20260703_110639"
 MANIFEST = RUN/"step2_gene_rawlog1p/gene_label_chunks_manifest.tsv"
-OUT = BASE/"deepseek_outcome/m2_v3_17organs_continue_20260819/section_hvg384_17organs"
+OUT = BASE/"deepseek_outcome/spagenx_v3_17organs_continue_20260819/section_hvg384_17organs"
 OUT.mkdir(parents=True, exist_ok=True)
 
 rows=[]

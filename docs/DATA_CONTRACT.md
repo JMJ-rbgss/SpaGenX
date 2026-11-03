@@ -20,6 +20,10 @@ The active-row HVG384 builder uses rows present in the rowmap, masks unobserved 
 
 Verify external assets against the hashes in `external_assets.json` and follow their applicable access and licensing terms. Historical migrations additionally require source h5ad files and original Program membership tables.
 
+For the canonical preprocessing stage, `--program-root` must contain `runtime_programs_256.tsv`, `runtime_gene_program_edges.tsv`, `canonical_to_runtime_program.tsv`, and `gene_to_program_m16_overlay.pt`. These are the source tables and overlay, not model weights. The stage writes the canonical overlay to `<out>/program256_canonical_identity_m16/gene_to_program_m16_overlay.pt`. Set training `--program_overlay_path` and inference `paths.program` to that same frozen asset. The inference overlay must match the Program buffers in the SpaGenX weights; its reference SHA256 is recorded in `external_assets.json`.
+
+Pass the matching typed-neighbor file through `--neighbor-overlay` for canonical preprocessing. All source assets are read-only; generated assets go to the selected new output directory.
+
 ## Protocol differences
 
 The native training overlay uses spot-based sampling, stored distance units and padding. The WSI application wrapper uses a full-slide grid and normalized slide-local distances. Existing experimental overlays can be passed directly to inference. Inference uses no expression prompt and the SpaGenX weight configuration; training uses its native step5000 prompt/gene-bias schedule and validation metric.

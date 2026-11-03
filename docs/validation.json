@@ -6,25 +6,25 @@
     "syntax": "PASS",
     "synthetic_and_boundary": "PASS",
     "launcher_dry_runs": "PASS",
-    "trainer_function_AST_identity": "PASS",
+    "trainer_function_AST_identity": "PASS_AFTER_IDENTIFIER_NORMALIZATION; 43 retained functions unchanged, CLI defaults updated",
     "native_equivalence_and_schedule": [
       {
         "step": 0,
-        "max_abs_error": 0.0
+        "max_abs_error": 0
       },
       {
         "step": 5000,
-        "max_abs_error": 0.0
+        "max_abs_error": 0
       },
       {
         "step": 42000,
-        "max_abs_error": 0.0
+        "max_abs_error": 0
       }
     ],
     "private_spagenx_weights_equivalence": {
       "atol": 0.0001,
       "rtol": 0.0001,
-      "max_abs_error": 0.0,
+      "max_abs_error": 0,
       "parameters_unchanged": true,
       "no_sample_data_exported": true
     },
@@ -38,5 +38,31 @@
     "timm": "0.9.16",
     "anndata": "0.10.8",
     "Pillow": "11.3.0"
+  },
+  "release_revision_checks": {
+    "date": "2026-11-03",
+    "base_commit": "cccdf9c45602c5c335423ec4b33f18ad44663eda",
+    "naming_scan": "PASS; no internal model names in current release text",
+    "scratch_and_resume_native_parser": "PASS",
+    "automation_tests_passed": 4,
+    "python_syntax": "PASS",
+    "train_inference_model_sources_identical": true,
+    "synthetic_cpu_model": {
+      "state_tensors_identical": 166,
+      "strict_load": true,
+      "tensor_outputs_exactly_equal": true,
+      "feature_dim": 1536,
+      "d_model": 32
+    },
+    "program_source_validation": {
+      "status": "PASS",
+      "frozen_training_identity_mapping_used": true,
+      "program_ids_mask_degree_match_frozen_overlay": true,
+      "original_input_hashes_unchanged": 7,
+      "new_h5ad_mapping_run": false
+    },
+    "full_preprocessing_rerun": false,
+    "formal_training_started": false,
+    "full_state_resume_format": "spagenx_17organ_full_state_v1"
   }
 }

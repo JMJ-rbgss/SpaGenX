@@ -33,7 +33,7 @@ OpenSlide需同时安装Python绑定和底层库，适用平台可使用`python 
 
 ```text
 preprocessing/       特征、表达、rowmap、邻域、canonical/Program修正与HVG384
-training/            原生模型、恢复训练器及配置化入口
+training/            原生模型、训练器及配置化入口
 inference/           冻结特征及WSI推理
 scripts/             自动WSI推理
 configs/             外置资产、预处理和训练配置
@@ -125,7 +125,7 @@ python training/run.py --config configs/train.local.json --execute
 
 第二条命令预览分布式命令，第三条才训练。配置采用四卡、每卡batch64、BF16、AdamW、学习率/weight decay均1e-4、gradient clip1.0、gene chunk2048和seed42，保留原step5000调度。
 
-示例从外置step1000完整状态继续训练，该文件包含模型参数、优化器及恢复信息，需与SpaGenX推理权重分别准备。完整`torchrun`模板见[训练教程](docs/USAGE.zh-CN.md#7-pytorch四卡训练)。
+默认示例从step 0、seed42随机初始化开始，不读取checkpoint。断点恢复可另用`configs/train.resume.example.json`，填写本训练入口保存的完整状态文件及其实际step，并保持GPU数量一致。完整`torchrun`模板见[训练教程](docs/USAGE.zh-CN.md#7-pytorch四卡训练)。
 
 ## 输出命名
 

@@ -21,30 +21,30 @@ report = json.loads((RUN/"step1_features"/"feature_store_report.json").read_text
 F = int(report["features"])
 print("feature_store_features", F)
 
-m2 = torch.load(OV / "m2_pool32_homo_hetero_overlay.pt", map_location="cpu", weights_only=False)
+spagenx = torch.load(OV / "spagenx_pool32_homo_hetero_overlay.pt", map_location="cpu", weights_only=False)
 
 print("\n=== 1. 形状检查 ===")
-print("m2 keys", sorted(m2.keys()))
+print("spagenx keys", sorted(spagenx.keys()))
 shapes = {
- "m2_cand_rows": m2["candidate_row_ids"].shape,
- "m2_cand_fidx": m2["candidate_feature_indices"].shape,
- "m2_cand_mask": m2["candidate_valid_mask"].shape,
- "m2_cand_dist": m2["candidate_spatial_distance"].shape,
- "m2_cand_cos": m2["candidate_feature_cosine_sim"].shape,
- "m2_homo_rows": m2["homo_row_ids"].shape,
- "m2_homo_fidx": m2["homo_feature_indices"].shape,
- "m2_homo_mask": m2["homo_valid_mask"].shape,
- "m2_hetero_rows": m2["hetero_row_ids"].shape,
- "m2_hetero_fidx": m2["hetero_feature_indices"].shape,
- "m2_hetero_mask": m2["hetero_valid_mask"].shape,
+ "spagenx_cand_rows": spagenx["candidate_row_ids"].shape,
+ "spagenx_cand_fidx": spagenx["candidate_feature_indices"].shape,
+ "spagenx_cand_mask": spagenx["candidate_valid_mask"].shape,
+ "spagenx_cand_dist": spagenx["candidate_spatial_distance"].shape,
+ "spagenx_cand_cos": spagenx["candidate_feature_cosine_sim"].shape,
+ "spagenx_homo_rows": spagenx["homo_row_ids"].shape,
+ "spagenx_homo_fidx": spagenx["homo_feature_indices"].shape,
+ "spagenx_homo_mask": spagenx["homo_valid_mask"].shape,
+ "spagenx_hetero_rows": spagenx["hetero_row_ids"].shape,
+ "spagenx_hetero_fidx": spagenx["hetero_feature_indices"].shape,
+ "spagenx_hetero_mask": spagenx["hetero_valid_mask"].shape,
 }
 for k,v in shapes.items(): print(k, tuple(v))
 
 print("\n=== 2. 有效数分布（完整） ===")
 for name, mask in [
-    ("m2_candidate", m2["candidate_valid_mask"]),
-    ("m2_homo", m2["homo_valid_mask"]),
-    ("m2_hetero", m2["hetero_valid_mask"]),
+    ("spagenx_candidate", spagenx["candidate_valid_mask"]),
+    ("spagenx_homo", spagenx["homo_valid_mask"]),
+    ("spagenx_hetero", spagenx["hetero_valid_mask"]),
 ]:
     c = mask.sum(dim=1).numpy()
     print(f"{name}: min={c.min()} p50={np.percentile(c,50):.1f} p90={np.percentile(c,90):.1f} max={c.max()} full={int((c==mask.shape[1]).sum())} zero={int((c==0).sum())}")
@@ -58,17 +58,17 @@ def check_oob(name, vals, mask, lo, hi):
     print(f"{name}: valid_min={int(valid.min())} valid_max={int(valid.max())} expected[{lo},{hi}) ok={ok}")
     return ok
 
-check_oob("m2_cand_rows", m2["candidate_row_ids"], m2["candidate_valid_mask"], 0, N)
-check_oob("m2_cand_fidx", m2["candidate_feature_indices"], m2["candidate_valid_mask"], 0, F)
-check_oob("m2_homo_rows", m2["homo_row_ids"], m2["homo_valid_mask"], 0, N)
-check_oob("m2_homo_fidx", m2["homo_feature_indices"], m2["homo_valid_mask"], 0, F)
-check_oob("m2_hetero_rows", m2["hetero_row_ids"], m2["hetero_valid_mask"], 0, N)
-check_oob("m2_hetero_fidx", m2["hetero_feature_indices"], m2["hetero_valid_mask"], 0, F)
+check_oob("spagenx_cand_rows", spagenx["candidate_row_ids"], spagenx["candidate_valid_mask"], 0, N)
+check_oob("spagenx_cand_fidx", spagenx["candidate_feature_indices"], spagenx["candidate_valid_mask"], 0, F)
+check_oob("spagenx_homo_rows", spagenx["homo_row_ids"], spagenx["homo_valid_mask"], 0, N)
+check_oob("spagenx_homo_fidx", spagenx["homo_feature_indices"], spagenx["homo_valid_mask"], 0, F)
+check_oob("spagenx_hetero_rows", spagenx["hetero_row_ids"], spagenx["hetero_valid_mask"], 0, N)
+check_oob("spagenx_hetero_fidx", spagenx["hetero_feature_indices"], spagenx["hetero_valid_mask"], 0, F)
 
 print("\n=== 4. 距离/cosine 有限性检查（完整） ===")
 for name, vals, mask in [
-    ("m2_cand_dist", m2["candidate_spatial_distance"], m2["candidate_valid_mask"]),
-    ("m2_cand_cos", m2["candidate_feature_cosine_sim"], m2["candidate_valid_mask"]),
+    ("spagenx_cand_dist", spagenx["candidate_spatial_distance"], spagenx["candidate_valid_mask"]),
+    ("spagenx_cand_cos", spagenx["candidate_feature_cosine_sim"], spagenx["candidate_valid_mask"]),
 ]:
     v = vals[mask]
     finite = bool(torch.isfinite(v).all()) if v.numel() else True
@@ -80,9 +80,9 @@ idx = np.array(sorted(rng.sample(range(N), 20000)), dtype=np.int64)
 sec = rowmap["section_id"].astype(str).to_numpy()
 fail_sec = 0; fail_subset = 0; fail_disjoint = 0; fail_fidx = 0
 for i in idx:
-    cand = set(m2["candidate_row_ids"][i][m2["candidate_valid_mask"][i]].tolist())
-    homo = set(m2["homo_row_ids"][i][m2["homo_valid_mask"][i]].tolist())
-    hetero = set(m2["hetero_row_ids"][i][m2["hetero_valid_mask"][i]].tolist())
+    cand = set(spagenx["candidate_row_ids"][i][spagenx["candidate_valid_mask"][i]].tolist())
+    homo = set(spagenx["homo_row_ids"][i][spagenx["homo_valid_mask"][i]].tolist())
+    hetero = set(spagenx["hetero_row_ids"][i][spagenx["hetero_valid_mask"][i]].tolist())
     # same section for all candidate rows
     for rr in cand:
         if sec[rr] != sec[i]: fail_sec += 1; break
@@ -90,8 +90,8 @@ for i in idx:
     if not hetero.issubset(cand): fail_subset += 1
     if homo & hetero: fail_disjoint += 1
     # candidate feature index consistency: cand_fidx should equal rowmap feature_index of cand row
-    cf = m2["candidate_feature_indices"][i].tolist()
-    cr = m2["candidate_row_ids"][i].tolist()
+    cf = spagenx["candidate_feature_indices"][i].tolist()
+    cr = spagenx["candidate_row_ids"][i].tolist()
     for rr, ff in zip(cr, cf):
         if rr >= 0 and int(rowmap["feature_index"].iloc[rr]) != ff:
             fail_fidx += 1; break

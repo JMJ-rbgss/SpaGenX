@@ -13,7 +13,7 @@ import pandas as pd
 import torch
 from scipy.spatial import cKDTree
 
-K_M2 = 32
+K_CANDIDATE = 32
 K_HOMO = 12
 K_HETERO = 8
 
@@ -60,11 +60,11 @@ def main():
         by_section[section_code[sec]].append(rid)
     row_ids = torch.arange(N, dtype=torch.long)
     sec_tensor = torch.as_tensor([section_code[s] for s in sections], dtype=torch.int32)
-    cand_rows = torch.full((N, K_M2), -1, dtype=torch.long)
-    cand_fidx = torch.full((N, K_M2), -1, dtype=torch.long)
-    cand_mask = torch.zeros((N, K_M2), dtype=torch.bool)
-    cand_dist = torch.full((N, K_M2), float("inf"), dtype=torch.float32)
-    cand_sim = torch.full((N, K_M2), float("nan"), dtype=torch.float32)
+    cand_rows = torch.full((N, K_CANDIDATE), -1, dtype=torch.long)
+    cand_fidx = torch.full((N, K_CANDIDATE), -1, dtype=torch.long)
+    cand_mask = torch.zeros((N, K_CANDIDATE), dtype=torch.bool)
+    cand_dist = torch.full((N, K_CANDIDATE), float("inf"), dtype=torch.float32)
+    cand_sim = torch.full((N, K_CANDIDATE), float("nan"), dtype=torch.float32)
     homo_rows = torch.full((N, K_HOMO), -1, dtype=torch.long)
     homo_fidx = torch.full((N, K_HOMO), -1, dtype=torch.long)
     homo_mask = torch.zeros((N, K_HOMO), dtype=torch.bool)
@@ -78,7 +78,7 @@ def main():
         local_coords = coords[ridx]
         if n > 1:
             tree = cKDTree(local_coords)
-            qk = min(n, K_M2 + 1)
+            qk = min(n, K_CANDIDATE + 1)
             dist, loc = tree.query(local_coords, k=qk)
             if qk == 1:
                 dist = dist[:, None]; loc = loc[:, None]
@@ -86,7 +86,7 @@ def main():
                 keep = loc[i] != i
                 loc_i = loc[i][keep]; dist_i = dist[i][keep]
                 if loc_i.size:
-                    take2 = min(K_M2, loc_i.size)
+                    take2 = min(K_CANDIDATE, loc_i.size)
                     rr2 = ridx[loc_i[:take2]]
                     cand_rows[ridx[i], :take2] = torch.from_numpy(rr2)
                     cand_fidx[ridx[i], :take2] = torch.from_numpy(feature_idx[rr2])
@@ -106,7 +106,7 @@ def main():
             safe = cand_fidx[part].clone(); safe[~valid] = 0
             with torch.no_grad():
                 c = features[torch.from_numpy(feature_idx[part])].to(device=device, dtype=torch.float32)
-                nf = features[safe.reshape(-1)].reshape(len(part), K_M2, 1536).to(device=device, dtype=torch.float32)
+                nf = features[safe.reshape(-1)].reshape(len(part), K_CANDIDATE, 1536).to(device=device, dtype=torch.float32)
                 c = torch.nn.functional.normalize(c, dim=1, eps=1e-12)
                 nf = torch.nn.functional.normalize(nf, dim=2, eps=1e-12)
                 sim = (nf * c[:, None, :]).sum(dim=2).cpu()
@@ -127,16 +127,16 @@ def main():
             lr = torch.gather(cr, 1, lp); lf = torch.gather(cf, 1, lp)
             lr[~lm] = -1; lf[~lm] = -1
             hetero_rows[part] = lr; hetero_fidx[part] = lf; hetero_mask[part] = lm
-        resource.append({"stage": "m2_feature_cosine", "section_id": section_ids[sc], "n_rows": len(ridx), "time_sec": round(time.time() - t0, 4)})
+        resource.append({"stage": "spagenx_feature_cosine", "section_id": section_ids[sc], "n_rows": len(ridx), "time_sec": round(time.time() - t0, 4)})
     common_meta = {"rowmap_root": str(rowmap_root), "feature_store_pt": str(args.feature_store_pt), "N": N, "n_sections": len(section_ids), "section_codebook": section_ids, "uses_gene_expression_for_neighbors": False, "copies_neighbor_feature_tensor": False, "total_time_sec": round(time.time() - t_all, 3)}
-    m2 = {"version": "m2_pool32_homo_hetero_overlay", "row_ids": row_ids, "candidate_row_ids": cand_rows, "candidate_feature_indices": cand_fidx, "candidate_valid_mask": cand_mask, "candidate_spatial_distance": cand_dist, "candidate_feature_cosine_sim": cand_sim, "homo_row_ids": homo_rows, "homo_feature_indices": homo_fidx, "homo_valid_mask": homo_mask, "hetero_row_ids": hetero_rows, "hetero_feature_indices": hetero_fidx, "hetero_valid_mask": hetero_mask, "metadata": {**common_meta, "candidate_k": K_M2, "homo_k": K_HOMO, "hetero_k": K_HETERO}}
-    torch.save(m2, out / "m2_pool32_homo_hetero_overlay.pt")
+    spagenx = {"version": "spagenx_pool32_homo_hetero_overlay", "row_ids": row_ids, "candidate_row_ids": cand_rows, "candidate_feature_indices": cand_fidx, "candidate_valid_mask": cand_mask, "candidate_spatial_distance": cand_dist, "candidate_feature_cosine_sim": cand_sim, "homo_row_ids": homo_rows, "homo_feature_indices": homo_fidx, "homo_valid_mask": homo_mask, "hetero_row_ids": hetero_rows, "hetero_feature_indices": hetero_fidx, "hetero_valid_mask": hetero_mask, "metadata": {**common_meta, "candidate_k": K_CANDIDATE, "homo_k": K_HOMO, "hetero_k": K_HETERO}}
+    torch.save(spagenx, out / "spagenx_pool32_homo_hetero_overlay.pt")
     pd.DataFrame(resource).to_csv(out / "overlay_build_resource_profile.tsv", sep="\t", index=False)
     def count_summary(name, mask, k):
         c = mask.sum(dim=1).numpy()
         return {"name": name, "n_rows": N, "k": k, "min": int(c.min()), "p50": float(np.percentile(c, 50)), "p90": float(np.percentile(c, 90)), "max": int(c.max()), "n_full": int((c == k).sum()), "n_zero": int((c == 0).sum())}
-    pd.DataFrame([count_summary("m2_candidate", cand_mask, K_M2), count_summary("m2_homo", homo_mask, K_HOMO), count_summary("m2_hetero", hetero_mask, K_HETERO)]).to_csv(out / "m2_homo_hetero_distribution.tsv", sep="\t", index=False)
-    final = {"task_status": "PASS", "m2_overlay_built": True, "m2_candidate_k": K_M2, "m2_homo_k": K_HOMO, "m2_hetero_k": K_HETERO, "m2_full_pool32_ready": True, "copies_neighbor_feature_tensor": False, "ready_for_training": False}
+    pd.DataFrame([count_summary("spagenx_candidate", cand_mask, K_CANDIDATE), count_summary("spagenx_homo", homo_mask, K_HOMO), count_summary("spagenx_hetero", hetero_mask, K_HETERO)]).to_csv(out / "spagenx_homo_hetero_distribution.tsv", sep="\t", index=False)
+    final = {"task_status": "PASS", "spagenx_overlay_built": True, "spagenx_candidate_k": K_CANDIDATE, "spagenx_homo_k": K_HOMO, "spagenx_hetero_k": K_HETERO, "spagenx_full_pool32_ready": True, "copies_neighbor_feature_tensor": False, "ready_for_training": False}
     (out / "final_decision.json").write_text(json.dumps(final, indent=2) + "\n")
     print(json.dumps(final, indent=2), flush=True)
 

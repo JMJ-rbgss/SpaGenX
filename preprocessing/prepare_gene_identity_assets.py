@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build add-only canonical gene-identity assets for the 17-organ M2 corpus."""
+"""Build add-only canonical gene-identity assets for the 17-organ SpaGenX corpus."""
 
 from __future__ import annotations
 
@@ -27,13 +27,13 @@ import torch
 
 
 BASE = Path((__import__('os').environ.get('SPAGENX_DATA_ROOT', '/external/spagenx_data') + ''))
-DEFAULT_SPLIT = BASE / "deepseek_outcome/m2_v3_17organs_contract_fix_20260827_074854/split/section_split_17organs_dedup.tsv"
-DEFAULT_MANIFEST = BASE / "deepseek_outcome/m2_v3_17organs_contract_fix_20260827_074854/audit/corrected_gene_assets_round3/gene_label_chunks_manifest.tsv"
-DEFAULT_VOCAB = BASE / "new_pipeline_800gb/full_run_firstv1_rawlog1p_20260703_110639/step2_gene_rawlog1p/global_gene_vocab.tsv"
-DEFAULT_ROWMAP = BASE / "new_pipeline_800gb/full_run_firstv1_rawlog1p_20260703_110639/step3_rowmap_17organs"
-DEFAULT_H5AD = BASE / "hest_stimage_17organs_human_20260819/data/st"
+DEFAULT_SPLIT = BASE / "section_split.tsv"
+DEFAULT_MANIFEST = BASE / "gene_label_chunks_manifest.tsv"
+DEFAULT_VOCAB = BASE / "global_gene_vocab.tsv"
+DEFAULT_ROWMAP = BASE / "rowmap"
+DEFAULT_H5AD = BASE / "h5ad"
 DEFAULT_PROGRAM = BASE / "program_source"
-DEFAULT_M2_OVERLAY = BASE / "new_pipeline_800gb/full_run_firstv1_rawlog1p_20260703_110639/step4_overlays_17organs/m2_pool32_homo_hetero_overlay.pt"
+DEFAULT_SPAGENX_OVERLAY = BASE / "neighbors.pt"
 
 EXPECTED = {
     "active_sections": 1205,
@@ -446,6 +446,7 @@ def main() -> None:
     ap.add_argument("--rowmap", type=Path, default=DEFAULT_ROWMAP)
     ap.add_argument("--h5ad-root", type=Path, default=DEFAULT_H5AD)
     ap.add_argument("--program-root", type=Path, default=DEFAULT_PROGRAM)
+    ap.add_argument("--neighbor-overlay", type=Path, default=DEFAULT_SPAGENX_OVERLAY)
     args = ap.parse_args()
     if not 1 <= args.workers <= 16:
         raise SystemExit("workers must be in [1,16]")
@@ -453,7 +454,7 @@ def main() -> None:
     (args.out / "code").mkdir()
     shutil.copy2(Path(__file__), args.out / "code" / Path(__file__).name)
     (args.out / "commands.log").write_text(f"{datetime.now(timezone.utc).isoformat()} {sys.executable} {' '.join(sys.argv)}\n")
-    write_json(args.out / "final_decision.json", {"decision": "FAIL_M2_17_GENE_IDENTITY_DATA_NOT_FIXED", "completed": False})
+    write_json(args.out / "final_decision.json", {"decision": "FAIL_SpaGenX_17_GENE_IDENTITY_DATA_NOT_FIXED", "completed": False})
     (args.out / "status.md").write_text("RUNNING: preflight and source mapping\n")
     try:
         split = pd.read_csv(args.split, sep="\t", dtype=str)
@@ -567,8 +568,8 @@ def main() -> None:
             "rowmap_root": str(args.rowmap),
             "row_to_gene_chunk_id_sha256": sha256_file(args.rowmap / "row_to_gene_chunk_id.pt"),
             "row_to_gene_row_index_sha256": sha256_file(args.rowmap / "row_to_gene_row_index.pt"),
-            "m2_neighbor_overlay": str(DEFAULT_M2_OVERLAY),
-            "m2_neighbor_overlay_sha256": sha256_file(DEFAULT_M2_OVERLAY),
+            "spagenx_neighbor_overlay": str(args.neighbor_overlay),
+            "spagenx_neighbor_overlay_sha256": sha256_file(args.neighbor_overlay),
             "row_ids_rebuilt": False,
             "features_rebuilt": False,
             "neighbors_rebuilt": False,
@@ -604,18 +605,18 @@ def main() -> None:
             "program_overlay_sha256": program_audit["overlay_sha256"],
             "existing_training_processes_automatically_switched": False,
         }
-        write_json(args.out / "m2_gene_identity_fix_contract.json", summary)
+        write_json(args.out / "spagenx_gene_identity_fix_contract.json", summary)
         decision = {
-            "decision": "PASS_M2_17_GENE_IDENTITY_DATA_FIXED",
+            "decision": "PASS_SpaGenX_17_GENE_IDENTITY_DATA_FIXED",
             "completed": True,
             "completed_at_utc": datetime.now(timezone.utc).isoformat(),
             **summary,
         }
         write_json(args.out / "final_decision.json", decision)
-        (args.out / "status.md").write_text("PASS_M2_17_GENE_IDENTITY_DATA_FIXED\n")
+        (args.out / "status.md").write_text("PASS_SpaGenX_17_GENE_IDENTITY_DATA_FIXED\n")
         (args.out / "final_report.md").write_text(
-            "# M2-17 canonical gene-identity data fix\n\n"
-            f"- Decision: `PASS_M2_17_GENE_IDENTITY_DATA_FIXED`\n"
+            "# SpaGenX-17 canonical gene-identity data fix\n\n"
+            f"- Decision: `PASS_SpaGenX_17_GENE_IDENTITY_DATA_FIXED`\n"
             f"- Active corpus: {len(active):,} sections / {EXPECTED['active_rows']:,} rows\n"
             f"- Rebuilt affected sections: {len(repair_rows)}\n"
             f"- Corrected manifest: `{manifest_out}`\n"
@@ -634,14 +635,14 @@ def main() -> None:
         print(json.dumps(decision, indent=2, sort_keys=True))
     except Exception as exc:
         write_json(args.out / "final_decision.json", {
-            "decision": "FAIL_M2_17_GENE_IDENTITY_DATA_NOT_FIXED",
+            "decision": "FAIL_SpaGenX_17_GENE_IDENTITY_DATA_NOT_FIXED",
             "completed": True,
             "completed_at_utc": datetime.now(timezone.utc).isoformat(),
             "error": f"{type(exc).__name__}: {exc}",
         })
-        (args.out / "status.md").write_text(f"FAIL_M2_17_GENE_IDENTITY_DATA_NOT_FIXED\n\n{exc}\n")
+        (args.out / "status.md").write_text(f"FAIL_SpaGenX_17_GENE_IDENTITY_DATA_NOT_FIXED\n\n{exc}\n")
         (args.out / "final_report.md").write_text(
-            f"# M2-17 canonical gene-identity data fix\n\nDecision: `FAIL_M2_17_GENE_IDENTITY_DATA_NOT_FIXED`\n\nError: {exc}\n"
+            f"# SpaGenX-17 canonical gene-identity data fix\n\nDecision: `FAIL_SpaGenX_17_GENE_IDENTITY_DATA_NOT_FIXED`\n\nError: {exc}\n"
         )
         traceback.print_exc()
         raise

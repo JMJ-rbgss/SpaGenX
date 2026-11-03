@@ -6,7 +6,7 @@ import numpy as np
 import scipy.sparse as sp
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "preprocessing/fix_m2_gene_identity_assets.py"
+SCRIPT = Path(__file__).resolve().parents[1] / "preprocessing/prepare_gene_identity_assets.py"
 spec = importlib.util.spec_from_file_location("fixer", SCRIPT)
 fixer = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fixer)

@@ -45,31 +45,31 @@
     "target": "preprocessing/step4_build_spagenx_overlays.py",
     "role": "native CLI",
     "source_sha256": "44ab7a7757739f72b32db7c82656e117b9d187ae8f333b42369eadd29bb10f2a",
-    "portable_sha256": "9c371d991c4f132b6e011da8e8b6558ff0293b616cfa0510e6a671ded807fde9"
+    "portable_sha256": "92e14730ce6deef804c36a5132aae945bfb424240d14dd454769ac3e5bc4f984"
   },
   {
     "target": "preprocessing/validate_overlays_17organs.py",
     "role": "native CLI",
     "source_sha256": "4771cd304210796a4e20b3bfc1f79062386262a2546cd735ed287901f46f4666",
-    "portable_sha256": "1f79286df97c1e8f740301768f6fa38b6a4eeb2990148d53836bb0c42a54cc99"
+    "portable_sha256": "3fd89a77d8ff5f62ab0640b5951d8a4c2feb874bce3adf9341e9584267589db2"
   },
   {
     "target": "preprocessing/rebuild_section_hvg384_17organs.py",
     "role": "historical dataset construction",
     "source_sha256": "1ee6d1651557a01b7c4833db7c967e8159d6e7310c4d13079dffed85be15bdb1",
-    "portable_sha256": "9d6f70e226f8ff33ebf8af9cdb172143ebdddf9819873b50537763b7d4bf738f"
+    "portable_sha256": "a2ee03d0595a064c0b43f0026f896d43da02687f196d5d798fbc9870ceb215a4"
   },
   {
-    "target": "preprocessing/fix_m2_gene_identity_assets.py",
+    "target": "preprocessing/prepare_gene_identity_assets.py",
     "role": "canonical identity and Program M16 migration",
     "source_sha256": "c302021d7a32523819e82efb0d0692a2fa3eb28bc5c41047be265dcd6716eeeb",
-    "portable_sha256": "f06f7c085397ae14b92b67ec716236901c6b58b8574e36ec8e6d261d77f89874"
+    "portable_sha256": "21798c2e6fb5706e29a98b2ff5f8dbc159e28dff0961c571140577406015026b"
   },
   {
     "target": "tests/test_original_gene_identity.py",
     "role": "original unit tests",
     "source_sha256": "df5dc87270f08c6c7f54c1f50d500fbcbe967ba43959dcad6d32456a78f7c04a",
-    "portable_sha256": "1c61b0e454a4b748ebacdd959822fbdd165856a26ade2affec32fe349f16712c"
+    "portable_sha256": "375a8d1a2457940780a0cbfe7fc8bb8319db3236b00f73c30de91b387534122d"
   },
   {
     "target": "preprocessing/rebuild_active_row_hvg384.py",
@@ -78,16 +78,16 @@
     "portable_sha256": "3aead4127d6b0c41e93b6703d6a727ff0484f9d8f11b7af439c2a1a89c2c0f1d"
   },
   {
-    "target": "training/run_m2_v3_recovery_section.py",
+    "target": "training/spagenx_trainer.py",
     "role": "formal SpaGenX lineage",
     "source_sha256": "9d78cea574a6156e3d6977ba1f09b0decca838ef2d4c289d779bec300684b677",
-    "portable_sha256": "4da9d462a6f905e3e1cec9a6fdfd039debede7d53dbdf1633b5292e971d845c1"
+    "portable_sha256": "5469d86714ab06cde69af6c29ca67e42582ae8eb290b38c203bc7a6a57f0968e"
   },
   {
-    "target": "training/m2_v3_model.py",
+    "target": "training/spagenx_network.py",
     "role": "formal SpaGenX lineage",
     "source_sha256": "c7b340a592ba7e199b9b47bbb160ce8273a340d51e3c426eb75028f9b6483ffa",
-    "portable_sha256": "39a58b7d318b72598915c493aee8ccfd7d71cce255e2d7d5c88e0688aeaf72ff"
+    "portable_sha256": "6fe0601a7f194b118a479f9b1960d3cdc02936f577b1ec5cbcc17164bf335737"
   },
   {
     "target": "training/m_family_common.py",
@@ -96,33 +96,9 @@
     "portable_sha256": "79dac8997fe62d911073c017b453e10f3a1056b8685c533bc1a87fe990ccafb9"
   },
   {
-    "target": "docs/launch_continue_full_4ddp.sh.txt",
-    "role": "archival launch; not executable recipe",
-    "source_sha256": "3de2c6f7da19151b459d0398baad256bdadcc39e9530f772880fa041d2b2719a",
-    "portable_sha256": "4468da499c2650b31fb83731a49c600ac9421d2efffb3e431485df7552d16fbc"
-  },
-  {
-    "target": "docs/launch_full_4ddp_resume.sh.txt",
-    "role": "archival launch; not executable recipe",
-    "source_sha256": "1aecb040de0f6d1f46fa93b287094f2e255d407c9bb214724591cf3dbb332579",
-    "portable_sha256": "65ed19eeb1ff8906b625e0900e388f9f8ff1349b25de8cdfaf08510743b6277f"
-  },
-  {
-    "target": "docs/launch_full_4ddp_scratch.sh.txt",
-    "role": "archival launch; not executable recipe",
-    "source_sha256": "dfc048ac8a1da4b773727b6947a1a3aa480ff631a15a04704cdcde3d36f6a11c",
-    "portable_sha256": "1b5939490e18a744b38e3a0d062ac00d328e3a0ba6ad5722050ca01d010d4664"
-  },
-  {
-    "target": "inference/experiment_pseudobulk_archive.py",
-    "role": "experimental frozen-feature protocol; archival only",
-    "source_sha256": "20dbf63df7584229170ea0b67f352194e5a757147ac0d494da8d9aa95a820469",
-    "portable_sha256": "aa9b16a79bc2ae2d3e2d5c23bc36c082cae290f1656691db1b91e90fecd7dd14"
-  },
-  {
     "target": "inference/spagenx_cli.py",
     "role": "hostA verified WSI application wrapper",
     "source_sha256": "6efc18e0806aa147f78050a53adb4a5472473b4ce92391fd9c6171550668ec47",
-    "portable_sha256": "afe080d213fd194d2418479aa575e8a2a9aabc26ff80af1919f3d142e3806e2f"
+    "portable_sha256": "9e790dd0c26fa69d1de87f1cc990a36673929b69f80ddb42982ab6052db7f96d"
   }
 ]

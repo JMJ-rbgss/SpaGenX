@@ -16,9 +16,9 @@ SpaGenX提供配置化预处理、原生训练和WSI推理入口。
 | 对新H&E/WSI预测基因表达 | 图像、MPP、器官、基因列表、冻结资产 | `scripts/infer_wsi.sh` |
 | 对已有可信特征预测 | 特征、匹配邻域、器官和基因列表 | `inference/spagenx_cli.py infer` |
 | 构建研究训练数据 | 图像、实测表达、spot坐标、冻结划分和元数据 | `preprocessing/run.py` |
-| 按原生合同继续训练 | 完整训练资产、step1000恢复状态、GPU | `training/run.py`或`torchrun` |
+| 从零训练SpaGenX | 完整训练资产、GPU | `training/run.py`或`torchrun` |
 
-推理需准备冻结权重和元数据；训练还需配对数据及完整恢复状态。资产准备见第3节，训练输入见第7节。
+推理需准备冻结权重和元数据；训练还需配对数据；完整恢复状态仅用于断点续训。资产准备见第3节，训练输入见第7节。
 
 ## 2. 环境安装
 
@@ -282,7 +282,7 @@ python preprocessing/run.py --stage hvg384 --config configs/preprocessing.local.
 | canonical | 身份修正、canonical Program M16映射与审计 |
 | hvg384 | 实际有效行上重建section HVG384 |
 
-`step2_add_organs.py`、旧`rebuild_section_hvg384_17organs.py`及实验专用pseudobulk脚本为历史迁移存档，保留`ARCHIVAL_ONLY`保护。当前使用入口为上表中的配置化阶段命令。
+`step2_add_organs.py`及旧`rebuild_section_hvg384_17organs.py`为历史迁移存档，保留`ARCHIVAL_ONLY`保护。当前使用入口为上表中的配置化阶段命令。
 
 ## 7. PyTorch四卡训练
 
@@ -290,7 +290,7 @@ python preprocessing/run.py --stage hvg384 --config configs/preprocessing.local.
 
 需要完整外置feature store、校正gene chunks、rowmap、划分文件、typed-neighbor overlay、Program映射及active-row HVG384。按照配置提供对应的数据清单和路径。
 
-当前示例从step1000完整状态继续训练。请准备包含模型参数、优化器和恢复信息的checkpoint，并与SpaGenX推理权重分别保存。
+默认示例从step 0、seed42随机初始化开始，不读取任何checkpoint。断点恢复另用`configs/train.resume.example.json`，指定本训练入口生成的完整状态文件和其中保存的实际step；GPU数量保持一致。
 
 ### 7.2 推荐的配置化命令
 
@@ -309,7 +309,7 @@ python training/run.py --config configs/train.local.json --execute
 
 ### 7.3 标准`torchrun`命令模板
 
-下面是同一类原生入口的命令模板；原生入口不提供包装层的dry-run保护，**直接运行就会开始训练**。先完成7.2的检查。恢复状态及所有路径必须真实存在，`OUT`必须是新目录。
+下面是同一类原生入口的命令模板；原生入口不提供包装层的dry-run保护，**直接运行就会开始训练**。先完成7.2的检查。所有输入路径必须真实存在，`OUT`必须是新目录。
 
 ```bash
 export DATA_ROOT=/external/spagenx_data
@@ -331,16 +331,15 @@ CUDA_VISIBLE_DEVICES=4,5,6,7 torchrun \
   --lr 0.0001 --weight_decay 0.0001 --grad_clip 1.0 \
   --eval_micro_batch_rows_per_rank 4 --eval_sampler_mode all_gene_20 \
   --seed 42 --base_seed 42 --mode full \
-  --max_steps 499000 --eval_interval 1000 --checkpoint_interval 1000 \
+  --max_steps 500000 --eval_interval 1000 --checkpoint_interval 1000 \
   --save_checkpoint --save_full_state --write_best_model \
   --early_stopping --early_stop_start_step 40000 \
   --early_stop_patience_evals 20 --early_stop_min_delta 0.0005 \
-  --direct_17organ_model_only_resume --resume_full_state \
-  --resume_checkpoint "$DATA_ROOT/recovery_step1000_full_state.pt" \
-  --resume_global_step 1000 --output_root "$OUT"
+  --scratch17 --model_init_seed 42 \
+  --resume_global_step 0 --output_root "$OUT"
 ```
 
-`max_steps`为训练步数上限，`resume_global_step`对应恢复状态中的训练进度。验证指标和优化设置由原生训练器定义。
+`max_steps`为本次运行新增的优化器步数；最终step为`resume_global_step + max_steps`。从零训练时`resume_global_step=0`。续训时修改恢复配置中的checkpoint路径、实际已保存step和剩余训练步数，保持GPU数量一致。验证指标和优化设置由原生训练器定义。
 
 ### 7.4 训练产物
 
@@ -375,7 +374,7 @@ python training/run.py --help
 | CUDA OOM | 停止当前运行，检查显存占用；调整计算分块后新建运行并记录配置 |
 | `libopenslide`/动态库加载失败 | 同时核对Python绑定及底层库，参见官方平台安装说明 |
 | `invalid device ordinal` | 检查物理GPU与`CUDA_VISIBLE_DEVICES`后的本地编号 |
-| 缺少恢复checkpoint | 提供含模型、优化器及恢复信息的完整状态文件 |
+| 断点恢复缺少checkpoint | 仅续训时提供本训练入口生成的完整状态文件；从零训练无需checkpoint |
 
 OOM后可新建运行，调整`PATCH_BATCH`、`GENE_CHUNK`并记录配置。该封装使用torch反序列化，仅加载可信来源的`.pt`文件。
 

@@ -7,8 +7,8 @@ import torch.nn.functional as F
 from m_family_common import RawLog1pGeneImageBase
 
 
-class M2NeighborBranch(nn.Module):
-    """Gene-conditioned masked attention over one M2 neighbor partition."""
+class SpaGenXNeighborBranch(nn.Module):
+    """Gene-conditioned masked attention over one SpaGenX neighbor partition."""
 
     def __init__(self, feature_dim: int, d_model: int, max_k: int, branch_type: int):
         super().__init__()
@@ -42,7 +42,7 @@ class M2NeighborBranch(nn.Module):
     ) -> tuple[torch.Tensor, torch.Tensor]:
         batch, k, _ = neighbor_img.shape
         if k != self.max_k:
-            raise ValueError(f"M2 branch expected K={self.max_k}, got {k}")
+            raise ValueError(f"SpaGenX branch expected K={self.max_k}, got {k}")
         mask = neighbor_mask.bool()
         ranks = torch.arange(k, device=neighbor_img.device).unsqueeze(0).expand(batch, k)
         branch_ids = torch.full_like(ranks, self.branch_type)
@@ -74,19 +74,19 @@ class M2NeighborBranch(nn.Module):
         return context, valid
 
 
-class M2Pool32TypedEvidenceRawLog1pV3(RawLog1pGeneImageBase):
-    """M2 member using pool32, homo12 and hetero8 typed image evidence."""
+class SpaGenXModel(RawLog1pGeneImageBase):
+    """SpaGenX member using pool32, homo12 and hetero8 typed image evidence."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.model_name = "M2_v3_Pool32Homo12Hetero8TypedEvidenceRawLog1p"
-        self.model_variant = "M2"
+        self.model_name = "SpaGenX_v3_Pool32Homo12Hetero8TypedEvidenceRawLog1p"
+        self.model_variant = "SpaGenX"
         self.fusion_mode = "spagenx_typed_evidence_cross_attention"
         d_model = self.d_model
         feature_dim = self.feature_dim
-        self.candidate_branch = M2NeighborBranch(feature_dim, d_model, 32, 0)
-        self.homo_branch = M2NeighborBranch(feature_dim, d_model, 12, 1)
-        self.hetero_branch = M2NeighborBranch(feature_dim, d_model, 8, 2)
+        self.candidate_branch = SpaGenXNeighborBranch(feature_dim, d_model, 32, 0)
+        self.homo_branch = SpaGenXNeighborBranch(feature_dim, d_model, 12, 1)
+        self.hetero_branch = SpaGenXNeighborBranch(feature_dim, d_model, 8, 2)
         self.neighbor_film = nn.Sequential(
             nn.LayerNorm(d_model * 2),
             nn.Linear(d_model * 2, d_model),

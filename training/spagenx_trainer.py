@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""M2-v3 unified 17-organ trainer using the canonical M2-7 contract.
+"""SpaGenX native trainer for paired histology and spatial gene expression.
 
 Smoke:  CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 \
-          run_m2_v3_trainer.py --mode smoke20 ...
+          spagenx_trainer.py --mode smoke20 ...
 """
 from __future__ import annotations
 
@@ -18,34 +18,34 @@ import torch.nn.functional as F
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-# ── Import M2 model from same directory ────────────────────────
+# ── Import SpaGenX model from same directory ────────────────────────
 _SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_SCRIPT_DIR))
-from m2_v3_model import M2Pool32TypedEvidenceRawLog1pV3
+from spagenx_network import SpaGenXModel
 
 # ── Default paths ──────────────────────────────────────────────
-_PIPE = (__import__('os').environ.get('SPAGENX_DATA_ROOT', '/external/spagenx_data') + '/new_pipeline_800gb')
-_RUN = f"{_PIPE}/full_run_firstv1_rawlog1p_20260703_110639"
-_CORRECTED = (__import__('os').environ.get('SPAGENX_DATA_ROOT', '/external/spagenx_data') + '/deepseek_outcome/m2_v3_17organ_gene_identity_fix_20260909_225119/result')
-_P256 = f"{_CORRECTED}/program256_canonical_identity_m16/gene_to_program_m16_overlay.pt"
-_HVG384 = f"{_CORRECTED}/corrected_gene_assets/section_hvg384_ids.pt"
+_DATA_ROOT = os.environ.get("SPAGENX_DATA_ROOT", "/external/spagenx_data")
+_RUN = _DATA_ROOT
+_CORRECTED = _DATA_ROOT
+_P256 = f"{_DATA_ROOT}/gene_to_program_m16_overlay.pt"
+_HVG384 = f"{_DATA_ROOT}/section_hvg384_active_rows.pt"
 
 
 # ═══════════════════════════════════════════════════════════════
 #  CLI
 # ═══════════════════════════════════════════════════════════════
 def parse_args():
-    p = argparse.ArgumentParser(description="M2-v3 pool32/homo12/hetero8 trainer (shared raw-log1p cache)")
+    p = argparse.ArgumentParser(description="SpaGenX-v3 pool32/homo12/hetero8 trainer (shared raw-log1p cache)")
     p.add_argument("--mode", choices=["smoke20", "short_train", "full", "eval"], default="smoke20")
     p.add_argument("--max_steps", type=int, default=0)
     p.add_argument("--max_epochs", type=int, default=0)
     p.add_argument("--batch_size", type=int, default=96)
     # data
-    p.add_argument("--rowmap_root", default=f"{_RUN}/step3_rowmap")
-    p.add_argument("--feature_store", default=f"{_RUN}/step1_features/master_feature_store.pt")
-    p.add_argument("--gene_chunk_manifest", default=f"{_CORRECTED}/corrected_gene_assets/gene_label_chunks_manifest.tsv")
-    p.add_argument("--neighbor_overlay", default=f"{_RUN}/step4_overlays/m2_pool32_homo_hetero_overlay.pt")
-    p.add_argument("--v3_split_root", default=f"{_PIPE}/step10_split_v3_section_size_tech_balanced_20260704_073545",
+    p.add_argument("--rowmap_root", default=f"{_DATA_ROOT}/rowmap")
+    p.add_argument("--feature_store", default=f"{_DATA_ROOT}/features.pt")
+    p.add_argument("--gene_chunk_manifest", default=f"{_DATA_ROOT}/gene_label_chunks_manifest.tsv")
+    p.add_argument("--neighbor_overlay", default=f"{_DATA_ROOT}/neighbors.pt")
+    p.add_argument("--v3_split_root", default=f"{_DATA_ROOT}/split",
                    help="Directory with v3 train/val/test_row_indices.pt (preferred over rowmap split)")
     p.add_argument("--program_overlay_path", default=_P256,
                    help="Program-256 raw-log1p overlay dict with gene_to_program_ids/mask; default is M16 P256")
@@ -113,7 +113,7 @@ def parse_args():
                    help="Absolute global step for resumed runs; controls prompt/gene_bias/checkpoint/eval schedule")
     p.add_argument("--direct_17organ_model_only_resume", action="store_true", default=False)
     p.add_argument("--scratch17", action="store_true", default=False,
-                   help="Initialize the 17-organ M2 model from seed without reading any checkpoint")
+                   help="Initialize the 17-organ SpaGenX model from seed without reading any checkpoint")
     p.add_argument("--model_init_seed", type=int, default=42,
                    help="Private model initialization seed shared by all ranks")
     p.add_argument("--prior_best_metric", type=float, default=float("-inf"))
@@ -139,7 +139,7 @@ def parse_args():
 # ═══════════════════════════════════════════════════════════════
 #  Logging
 # ═══════════════════════════════════════════════════════════════
-_log = logging.getLogger("m2v3")
+_log = logging.getLogger("spagenxv3")
 if not _log.handlers:
     _h = logging.StreamHandler()
     _h.setFormatter(logging.Formatter("[%(asctime)s] %(message)s", datefmt="%H:%M:%S"))
@@ -230,7 +230,7 @@ def _state_sha256(state: dict[str, torch.Tensor], keys=None) -> str:
 
 
 def build_scratch_17organ_model(args, cb, n_genes, prog_ids, prog_mask, n_prog, device, r0):
-    """Initialize M2-17 identically on every rank without disturbing runtime RNG."""
+    """Initialize SpaGenX-17 identically on every rank without disturbing runtime RNG."""
     if not args.scratch17:
         raise RuntimeError("scratch initialization requires --scratch17")
     if args.resume_checkpoint or args.resume_full_state:
@@ -247,7 +247,7 @@ def build_scratch_17organ_model(args, cb, n_genes, prog_ids, prog_mask, n_prog, 
         torch.manual_seed(int(args.model_init_seed))
         if device.type == "cuda":
             torch.cuda.manual_seed_all(int(args.model_init_seed))
-        model = M2Pool32TypedEvidenceRawLog1pV3(
+        model = SpaGenXModel(
             n_genes=n_genes,
             n_organs=cb["n_organs"],
             n_techs=cb["n_techs"],
@@ -284,7 +284,7 @@ def build_direct_17organ_model_only_resume(args, cb, n_genes, prog_ids, prog_mas
         raise RuntimeError("direct 17-organ resume requires --resume_checkpoint")
     if cb["n_organs"] != 17 or cb["n_techs"] != 4:
         raise RuntimeError(f"direct resume requires 17 organs/4 technologies, got {cb['n_organs']}/{cb['n_techs']}")
-    model = M2Pool32TypedEvidenceRawLog1pV3(
+    model = SpaGenXModel(
         n_genes=n_genes, n_organs=17, n_techs=4,
         gene_to_program_ids=prog_ids, gene_to_program_mask=prog_mask,
         n_programs=n_prog, feature_dim=args.feature_dim, d_model=args.d_model,
@@ -464,7 +464,7 @@ def load_gene_chunk_table(manifest_path: str) -> dict:
     return table
 
 
-def load_m2_neighbor_overlay(path: str, n_rows: int, device):
+def load_spagenx_neighbor_overlay(path: str, n_rows: int, device):
     ov = torch.load(path, map_location="cpu", weights_only=False)
     required = {
         "candidate_row_ids", "candidate_feature_indices", "candidate_valid_mask",
@@ -474,7 +474,7 @@ def load_m2_neighbor_overlay(path: str, n_rows: int, device):
     }
     missing = sorted(required.difference(ov))
     if missing:
-        raise RuntimeError(f"M2 overlay missing keys: {missing}")
+        raise RuntimeError(f"SpaGenX overlay missing keys: {missing}")
     nbr = {key: torch.as_tensor(ov[key]).to(device) for key in required}
     expected = {
         "candidate_feature_indices": 32,
@@ -489,12 +489,12 @@ def load_m2_neighbor_overlay(path: str, n_rows: int, device):
     }
     for key, width in expected.items():
         if nbr[key].shape != (n_rows, width):
-            raise RuntimeError(f"M2 overlay {key} shape={tuple(nbr[key].shape)} expected={(n_rows, width)}")
-    log(f"M2 index overlay: {n_rows} rows, candidate=32 homo=12 hetero=8")
+            raise RuntimeError(f"SpaGenX overlay {key} shape={tuple(nbr[key].shape)} expected={(n_rows, width)}")
+    log(f"SpaGenX index overlay: {n_rows} rows, candidate=32 homo=12 hetero=8")
     return nbr
 
 
-def gather_m2_neighbors(nbr: dict, row_indices: torch.Tensor, features_gpu: torch.Tensor):
+def gather_spagenx_neighbors(nbr: dict, row_indices: torch.Tensor, features_gpu: torch.Tensor):
     candidate_rows = nbr["candidate_row_ids"][row_indices]
     candidate_fi = nbr["candidate_feature_indices"][row_indices].long()
     candidate_mask = nbr["candidate_valid_mask"][row_indices].bool()
@@ -819,9 +819,9 @@ def build_batch(row_indices, target_k, prompt_k, hvg_ratio,
     if B == 0:
         return None
 
-    # M2 overlays store only row/feature indices and side information. Features
+    # SpaGenX overlays store only row/feature indices and side information. Features
     # are gathered from the shared feature cache.
-    m2_neighbors = gather_m2_neighbors(nbr, row_indices, features_gpu)
+    spagenx_neighbors = gather_spagenx_neighbors(nbr, row_indices, features_gpu)
 
     T = max(1, target_k)
     sampler_mode, target_fraction = sampler_mode_for_step(global_step, sampler_mode_override=sampler_mode_override)
@@ -1053,7 +1053,7 @@ def build_batch(row_indices, target_k, prompt_k, hvg_ratio,
         "all_measured_backfill_fraction": float(sum(all_observed_backfill_counts)) / max(1, int(sum(mode_target_counts))),
         "prompt_budget": P,
         "target_prompt_overlap_count": int(sum(overlap_counts)),
-        **{key: value[vp] for key, value in m2_neighbors.items()},
+        **{key: value[vp] for key, value in spagenx_neighbors.items()},
         "organ_id": rorg_gpu[row_indices[vp]].long(),
         "tech_id": rtech_gpu[row_indices[vp]].long(),
         "n_valid": Bv,
@@ -1571,7 +1571,7 @@ def train_loop(raw_model, args, feat, rf, rgrow, rcid, rorg, rtech,
         missing = sorted(required - set(full_resume_payload))
         if missing:
             raise RuntimeError(f"full-state checkpoint missing fields: {missing}")
-        if full_resume_payload.get("format_version") != "m2_17organ_full_state_v1":
+        if full_resume_payload.get("format_version") != "spagenx_17organ_full_state_v1":
             raise RuntimeError(f"unsupported full-state format: {full_resume_payload.get('format_version')}")
         if int(full_resume_payload["step"]) != int(args.resume_global_step):
             raise RuntimeError("full-state step does not match --resume_global_step")
@@ -1733,7 +1733,7 @@ def train_loop(raw_model, args, feat, rf, rgrow, rcid, rorg, rtech,
         if r0:
             rm = raw_model if not ddp else model.module
             payload = {
-                "format_version": "m2_17organ_full_state_v1",
+                "format_version": "spagenx_17organ_full_state_v1",
                 "step": int(step),
                 "epoch": int(epoch),
                 "phase": str(phase),
@@ -2321,7 +2321,7 @@ def main():
     if not chunk_section_unique:
         log("WARNING: chunk_id does NOT map 1:1 to section_id. Cache key must use (sid, cid).")
     args.chunk_section_unique = chunk_section_unique
-    nbr = load_m2_neighbor_overlay(args.neighbor_overlay, n_rows, device)
+    nbr = load_spagenx_neighbor_overlay(args.neighbor_overlay, n_rows, device)
 
     rf = rm["row_to_feature_index"].long().to(device)
     rcid = rm["row_to_gene_chunk_id"].long().to(device)
@@ -2344,7 +2344,7 @@ def main():
     args.train_rows_by_organ = {index: int(value) for index, value in enumerate(train_organ_counts)}
 
     # ── model ──
-    model_variant = "M2"
+    model_variant = "SpaGenX"
     if args.scratch17:
         model, initialization_audit = build_scratch_17organ_model(
             args, cb, n_genes, prog_ids, prog_mask, n_prog, device, r0
@@ -2400,7 +2400,7 @@ def main():
 
     if args.scratch17:
         log(
-            f"Scratch M2-17 initialized from seed={args.model_init_seed}; "
+            f"Scratch SpaGenX-17 initialized from seed={args.model_init_seed}; "
             f"resume_global_step=0 runtime_seed={args.seed}+rank checkpoint_read=false"
         )
     elif args.direct_17organ_model_only_resume and args.resume_full_state:
