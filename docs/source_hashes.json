@@ -42,16 +42,16 @@
     "portable_sha256": "947c59e439eadef819a1f7c23a139ef892b23f52366888f263639749a103ce7d"
   },
   {
-    "target": "preprocessing/step4_build_m1_m2_overlays.py",
+    "target": "preprocessing/step4_build_spagenx_overlays.py",
     "role": "native CLI",
     "source_sha256": "44ab7a7757739f72b32db7c82656e117b9d187ae8f333b42369eadd29bb10f2a",
-    "portable_sha256": "44ab7a7757739f72b32db7c82656e117b9d187ae8f333b42369eadd29bb10f2a"
+    "portable_sha256": "9c371d991c4f132b6e011da8e8b6558ff0293b616cfa0510e6a671ded807fde9"
   },
   {
     "target": "preprocessing/validate_overlays_17organs.py",
     "role": "native CLI",
     "source_sha256": "4771cd304210796a4e20b3bfc1f79062386262a2546cd735ed287901f46f4666",
-    "portable_sha256": "8161443c6d4c8d6305fbc691ddac68f92e14af95d1ddb5c9da3a8c54fda3b53a"
+    "portable_sha256": "1f79286df97c1e8f740301768f6fa38b6a4eeb2990148d53836bb0c42a54cc99"
   },
   {
     "target": "preprocessing/rebuild_section_hvg384_17organs.py",
@@ -63,7 +63,7 @@
     "target": "preprocessing/fix_m2_gene_identity_assets.py",
     "role": "canonical identity and Program M16 migration",
     "source_sha256": "c302021d7a32523819e82efb0d0692a2fa3eb28bc5c41047be265dcd6716eeeb",
-    "portable_sha256": "c5a83076ac8d0335be681e24c0fed7897083e7690ea39a531bfb9f1fd5db4cfd"
+    "portable_sha256": "f06f7c085397ae14b92b67ec716236901c6b58b8574e36ec8e6d261d77f89874"
   },
   {
     "target": "tests/test_original_gene_identity.py",
@@ -81,19 +81,19 @@
     "target": "training/run_m2_v3_recovery_section.py",
     "role": "formal SpaGenX lineage",
     "source_sha256": "9d78cea574a6156e3d6977ba1f09b0decca838ef2d4c289d779bec300684b677",
-    "portable_sha256": "4f49a2c5411fd085d6143b607f020b50ad25ffc2acb6b6cba2137a6fa02c1056"
+    "portable_sha256": "4da9d462a6f905e3e1cec9a6fdfd039debede7d53dbdf1633b5292e971d845c1"
   },
   {
     "target": "training/m2_v3_model.py",
     "role": "formal SpaGenX lineage",
     "source_sha256": "c7b340a592ba7e199b9b47bbb160ce8273a340d51e3c426eb75028f9b6483ffa",
-    "portable_sha256": "c7b340a592ba7e199b9b47bbb160ce8273a340d51e3c426eb75028f9b6483ffa"
+    "portable_sha256": "39a58b7d318b72598915c493aee8ccfd7d71cce255e2d7d5c88e0688aeaf72ff"
   },
   {
     "target": "training/m_family_common.py",
     "role": "formal SpaGenX lineage",
     "source_sha256": "e87507013bd0867889744eed34120d2c57bbd0b6167768d471c8eddd40fd12f4",
-    "portable_sha256": "e87507013bd0867889744eed34120d2c57bbd0b6167768d471c8eddd40fd12f4"
+    "portable_sha256": "79dac8997fe62d911073c017b453e10f3a1056b8685c533bc1a87fe990ccafb9"
   },
   {
     "target": "docs/launch_continue_full_4ddp.sh.txt",

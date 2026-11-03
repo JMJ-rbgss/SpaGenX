@@ -107,9 +107,6 @@ def parse_args():
     p.add_argument("--write_best_model", action="store_true", default=False)
     p.add_argument("--resume_checkpoint", default="",
                    help="Model checkpoint, or complete training checkpoint with --resume_full_state")
-    p.add_argument("--unified_17organ_init", action="store_true", default=False,
-                   help="Reproduce canonical M2-7 initialization from M1, then expand only organ rows 7..16")
-    p.add_argument("--canonical_n_organs", type=int, default=7)
     p.add_argument("--expected_n_organs", type=int, default=17)
     p.add_argument("--expected_n_techs", type=int, default=4)
     p.add_argument("--resume_global_step", type=int, default=0,
@@ -232,149 +229,12 @@ def _state_sha256(state: dict[str, torch.Tensor], keys=None) -> str:
     return h.hexdigest()
 
 
-def _partial_load_canonical_m1(model: nn.Module, checkpoint_path: str, device) -> dict:
-    ckpt_path = Path(checkpoint_path)
-    if not ckpt_path.exists():
-        raise FileNotFoundError(f"resume_checkpoint not found: {ckpt_path}")
-    ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
-    state = ckpt.get("model", ckpt) if isinstance(ckpt, dict) else ckpt
-    missing, unexpected = model.load_state_dict(state, strict=False)
-    allowed_missing_prefixes = ("candidate_branch.", "homo_branch.", "hetero_branch.")
-    allowed_unexpected_prefixes = ("neighbor_attn.", "decoder.")
-    bad_missing = [key for key in missing if not key.startswith(allowed_missing_prefixes)]
-    bad_unexpected = [key for key in unexpected if not key.startswith(allowed_unexpected_prefixes)]
-    if bad_missing or bad_unexpected:
-        raise RuntimeError(
-            f"canonical M1 partial-load mismatch missing={bad_missing[:20]} "
-            f"unexpected={bad_unexpected[:20]}"
-        )
-    return {
-        "checkpoint": str(ckpt_path),
-        "checkpoint_step": int(ckpt.get("step", -1)) if isinstance(ckpt, dict) else -1,
-        "missing_keys": list(missing),
-        "unexpected_keys": list(unexpected),
-        "initialized_m2_key_count": len(missing),
-        "discarded_m1_neighbor_key_count": sum(key.startswith("neighbor_attn.") for key in unexpected),
-        "discarded_decoder_key_count": sum(key.startswith("decoder.") for key in unexpected),
-        "optimizer_restored": False,
-        "early_stop_state_restored": False,
-    }
-
-
-def build_unified_17organ_model(args, cb, n_genes, prog_ids, prog_mask, n_prog, device, r0):
-    """Reproduce the M2-7 start state, then expand only the organ vocabulary.
-
-    Model initialization is performed under a private seed-42 RNG scope on every
-    rank. DDP therefore receives the exact rank-0 canonical start state without
-    perturbing subsequent rank-specific sampler RNG streams.
-    """
-    if not args.unified_17organ_init:
-        raise RuntimeError("canonical M2-17 requires --unified_17organ_init")
-    if not args.resume_checkpoint:
-        raise RuntimeError("canonical M2-17 requires the frozen M1 step68000 checkpoint")
-    if cb["n_organs"] != int(args.expected_n_organs):
-        raise RuntimeError(f"expected {args.expected_n_organs} organs, found {cb['n_organs']}")
-    if cb["n_techs"] != int(args.expected_n_techs):
-        raise RuntimeError(f"expected {args.expected_n_techs} technologies, found {cb['n_techs']}")
-    if int(args.canonical_n_organs) != 7:
-        raise RuntimeError("canonical_n_organs must remain 7")
-
-    model_kwargs = dict(
-        n_genes=n_genes,
-        n_techs=cb["n_techs"],
-        gene_to_program_ids=prog_ids,
-        gene_to_program_mask=prog_mask,
-        n_programs=n_prog,
-        feature_dim=args.feature_dim,
-        d_model=args.d_model,
-        alpha_init=args.alpha_init,
-        gene_bias=args.gene_bias,
-        dropout=args.dropout,
-    )
-    cuda_devices = [device.index] if device.type == "cuda" and device.index is not None else []
-    with torch.random.fork_rng(devices=cuda_devices):
-        torch.manual_seed(int(args.base_seed))
-        canonical = M2Pool32TypedEvidenceRawLog1pV3(
-            n_organs=int(args.canonical_n_organs), **model_kwargs
-        ).to(device)
-        load_audit = _partial_load_canonical_m1(canonical, args.resume_checkpoint, device)
-        canonical_state = canonical.state_dict()
-        canonical_hash = _state_sha256(canonical_state)
-
-        torch.manual_seed(int(args.base_seed))
-        expanded = M2Pool32TypedEvidenceRawLog1pV3(
-            n_organs=cb["n_organs"], **model_kwargs
-        ).to(device)
-        new_rows_before = expanded.organ_emb.weight[int(args.canonical_n_organs):].detach().clone()
-        with torch.no_grad():
-            expanded_state = expanded.state_dict()
-            for key, value in canonical_state.items():
-                if key == "organ_emb.weight":
-                    expanded.organ_emb.weight[: int(args.canonical_n_organs)].copy_(value)
-                elif expanded_state[key].shape == value.shape:
-                    expanded_state[key].copy_(value)
-                else:
-                    raise RuntimeError(
-                        f"unexpected shared initialization shape mismatch {key}: "
-                        f"canonical={tuple(value.shape)} expanded={tuple(expanded_state[key].shape)}"
-                    )
-
-        expanded_state = expanded.state_dict()
-        shared_keys = [key for key in canonical_state if key != "organ_emb.weight"]
-        mismatches = [
-            key for key in shared_keys
-            if not torch.equal(expanded_state[key], canonical_state[key])
-        ]
-        old_rows_equal = torch.equal(
-            expanded.organ_emb.weight[: int(args.canonical_n_organs)],
-            canonical.organ_emb.weight,
-        )
-        tech_equal = torch.equal(expanded.tech_emb.weight, canonical.tech_emb.weight)
-        new_rows_preserved = torch.equal(
-            expanded.organ_emb.weight[int(args.canonical_n_organs):], new_rows_before
-        )
-        if mismatches or not old_rows_equal or not tech_equal or not new_rows_preserved:
-            raise RuntimeError(
-                f"unified initialization failed mismatches={mismatches[:20]} "
-                f"old_rows_equal={old_rows_equal} tech_equal={tech_equal} "
-                f"new_rows_preserved={new_rows_preserved}"
-            )
-        audit = {
-            "status": "PASS",
-            "strategy": "canonical_m2_7_seed42_then_expand_organ_rows_only",
-            "base_seed": int(args.base_seed),
-            "canonical_n_organs": int(args.canonical_n_organs),
-            "expanded_n_organs": int(cb["n_organs"]),
-            "n_techs": int(cb["n_techs"]),
-            "shared_tensor_count": len(shared_keys),
-            "shared_tensor_mismatch_count": len(mismatches),
-            "old_organ_rows_equal": old_rows_equal,
-            "tech_rows_equal": tech_equal,
-            "new_organ_rows_preserved_from_seed42_expanded_instance": new_rows_preserved,
-            "canonical_start_state_sha256": canonical_hash,
-            "new_organ_rows_sha256": _tensor_sha256(new_rows_before),
-            "old_organ_rows_sha256": _tensor_sha256(canonical.organ_emb.weight),
-            "tech_rows_sha256": _tensor_sha256(canonical.tech_emb.weight),
-            "partial_load": load_audit,
-        }
-        del canonical
-    if r0:
-        path = Path(args.output_root) / "m2_17organ_initialization_audit.json"
-        with open(path, "w") as handle:
-            json.dump(audit, handle, indent=2, sort_keys=True)
-    log(
-        f"Unified init PASS shared={audit['shared_tensor_count']} "
-        f"new_organ_rows_sha256={audit['new_organ_rows_sha256'][:12]}"
-    )
-    return expanded, audit
-
-
 def build_scratch_17organ_model(args, cb, n_genes, prog_ids, prog_mask, n_prog, device, r0):
     """Initialize M2-17 identically on every rank without disturbing runtime RNG."""
     if not args.scratch17:
         raise RuntimeError("scratch initialization requires --scratch17")
-    if args.resume_checkpoint or args.resume_full_state or args.unified_17organ_init:
-        raise RuntimeError("scratch initialization forbids checkpoint and unified-init inputs")
+    if args.resume_checkpoint or args.resume_full_state:
+        raise RuntimeError("scratch initialization forbids checkpoint inputs")
     if int(args.resume_global_step) != 0:
         raise RuntimeError("scratch initialization requires resume_global_step=0")
     if cb["n_organs"] != int(args.expected_n_organs) or cb["n_techs"] != int(args.expected_n_techs):
@@ -781,7 +641,7 @@ def select_target_local_cols_by_mode(nonzero_cols, measured_cols, gidx, prevalen
                                      row_idx, global_step, seed, gene_has_program_gpu,
                                      sid_value=None, section_hvg_map=None,
                                      high_priority_source="section_HVG384"):
-    """Select local gene columns for current M1_v2 sampler contract.
+    """Select local gene columns for the SpaGenX sampler contract.
 
     70% uses nonzero ∩ section_HVG384, then nonzero Program backfill, then nonzero all-gene backfill.
     20% uses all measured section genes, including measured zero.
@@ -960,7 +820,7 @@ def build_batch(row_indices, target_k, prompt_k, hvg_ratio,
         return None
 
     # M2 overlays store only row/feature indices and side information. Features
-    # are gathered from the same shared feature cache used by M0 and M1.
+    # are gathered from the shared feature cache.
     m2_neighbors = gather_m2_neighbors(nbr, row_indices, features_gpu)
 
     T = max(1, target_k)
@@ -1331,7 +1191,7 @@ def metric_stats(pred, target, mask):
             (y * y).sum().item(), (x * y).sum().item(), float(x.numel())]
 
 
-M1V3_AUX_METRIC_NAMES = [
+SPAGENX_AUX_METRIC_NAMES = [
     "gene_base_mean", "gene_base_std", "organ_gene_delta_mean", "organ_gene_delta_std",
     "image_residual_mean", "image_residual_std", "alpha_nbr_value", "alpha_prog_value",
     "gamma_c_mean", "gamma_c_std", "beta_c_mean", "beta_c_std",
@@ -1470,7 +1330,7 @@ def run_eval(model, val_idx, args, feat, rf, rgrow, rcid, rorg, rtech,
         per_gene_group = torch.zeros(
             (group_count, 6, int(n_genes)), dtype=torch.float64, device=device
         )
-    aux_sums = {k: 0.0 for k in M1V3_AUX_METRIC_NAMES}
+    aux_sums = {k: 0.0 for k in SPAGENX_AUX_METRIC_NAMES}
     aux_count = 0
     with torch.no_grad():
         for cid, rr in chunk_batch_iter(rows, eval_bs, rcid, device,
@@ -1519,7 +1379,7 @@ def run_eval(model, val_idx, args, feat, rf, rgrow, rcid, rorg, rtech,
                             ablation=eval_ablation)
                 pred = out["pred_log1p"]
             aux_count += 1
-            for _k in M1V3_AUX_METRIC_NAMES:
+            for _k in SPAGENX_AUX_METRIC_NAMES:
                 aux_sums[_k] += _scalar_float(out.get(_k), 0.0)
             mask = b["target_mask"].bool()
             s = metric_stats(pred, b["target_log1p"], mask)
@@ -1605,7 +1465,7 @@ def run_eval(model, val_idx, args, feat, rf, rgrow, rcid, rorg, rtech,
     m["high_priority_source"] = args.high_priority_source
     m["hvg384_path"] = args.section_hvg_path
     if aux_count > 0:
-        for _k in M1V3_AUX_METRIC_NAMES:
+        for _k in SPAGENX_AUX_METRIC_NAMES:
             m[_k] = aux_sums[_k] / float(aux_count)
     m["eval_ablation_mode"] = ablation_mode
     m["eval_gene_id_shuffle"] = bool(eval_gene_id_shuffle)
@@ -1678,7 +1538,7 @@ def write_group_eval_rows(path: Path, step: int, grouped: dict, args, append: bo
 def train_loop(raw_model, args, feat, rf, rgrow, rcid, rorg, rtech,
                nbr, cl, train_idx, val_idx, device, ddp, r0, out_root):
     if ddp:
-        # M1-v3 has delayed/conditional branches (prompt, gene bias, neighbor/program paths).
+        # SpaGenX has delayed/conditional branches (prompt, gene bias, neighbor/program paths).
         # Some parameters can be legitimately unused for a given sampler mode/step, so DDP
         # must not require every parameter to receive gradients every iteration.
         model = DDP(raw_model, device_ids=[args.local_rank],
@@ -2408,8 +2268,10 @@ def main():
         raise RuntimeError("--resume_full_state requires --direct_17organ_model_only_resume")
     if args.resume_full_state and not args.save_full_state:
         raise RuntimeError("full-state resume must keep --save_full_state enabled")
-    if args.scratch17 and (args.resume_checkpoint or args.resume_full_state or args.unified_17organ_init):
-        raise RuntimeError("--scratch17 forbids checkpoint/full-state/unified initialization inputs")
+    if args.scratch17 and (args.resume_checkpoint or args.resume_full_state):
+        raise RuntimeError("--scratch17 forbids checkpoint/full-state initialization inputs")
+    if not args.scratch17 and not args.direct_17organ_model_only_resume:
+        raise RuntimeError("select --scratch17 or --direct_17organ_model_only_resume")
     if args.scratch17 and int(args.resume_global_step) != 0:
         raise RuntimeError("--scratch17 requires --resume_global_step 0")
 
@@ -2418,7 +2280,7 @@ def main():
         args.write_best_model = True
     if not args.output_root:
         ts = time.strftime("%Y%m%d_%H%M%S")
-        args.output_root = f"{args.rowmap_root}/../m1_v2_smoke_{ts}"
+        args.output_root = f"{args.rowmap_root}/../spagenx_smoke_{ts}"
     out_path = Path(args.output_root)
     if out_path.exists() and any(out_path.iterdir()) and not args.allow_existing_output:
         print(f"FATAL output_root exists and is non-empty: {out_path}. Use a new timestamped output_root or --allow_existing_output.", file=sys.stderr)
@@ -2491,17 +2353,9 @@ def main():
         # Recovery lineage: model tensors are loaded exactly, while optimizer and
         # iterator state are intentionally reset because the source checkpoint
         # contains model state only. Any positive checkpoint step is permitted.
-        if int(args.resume_global_step) <= 0 or args.unified_17organ_init:
-            raise RuntimeError("direct model-only recovery requires step>0 and forbids unified initializer")
+        if int(args.resume_global_step) <= 0:
+            raise RuntimeError("direct model-only recovery requires step>0")
         model, initialization_audit = build_direct_17organ_model_only_resume(
-            args, cb, n_genes, prog_ids, prog_mask, n_prog, device, r0
-        )
-    else:
-        if int(args.resume_global_step) != 68000:
-            raise RuntimeError(
-                f"canonical unified retraining must start at global step 68000, got {args.resume_global_step}"
-            )
-        model, initialization_audit = build_unified_17organ_model(
             args, cb, n_genes, prog_ids, prog_mask, n_prog, device, r0
         )
     model.prompt_start_step = int(args.prompt_start_step)
@@ -2560,14 +2414,6 @@ def main():
             f"prior_best={args.prior_best_metric}@{args.prior_best_step} prior_bad_evals={args.prior_bad_evals} "
             "optimizer_restored=false data_iterator_position_restored=false"
         )
-    else:
-        log(
-            f"Canonical M1 partial-load complete: initialized_m2_keys="
-            f"{initialization_audit['partial_load']['initialized_m2_key_count']} "
-            f"resume_global_step={int(args.resume_global_step)} "
-            "optimizer_restored=false early_stop_state_restored=false"
-        )
-
     if args.mode == "eval":
         eval_step = int(getattr(args, "resume_global_step", 0) or 0)
         m = run_eval(model, val_idx, args, feat, rf, rgrow, rcid, rorg, rtech,

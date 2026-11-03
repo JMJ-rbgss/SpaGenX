@@ -127,7 +127,7 @@ class StaticProgramPriorPool(nn.Module):
 
 
 class RawLog1pGeneImageBase(nn.Module):
-    """Shared M0/M2 contract copied from the current M1-v3 gene/image path."""
+    """Shared SpaGenX gene/image implementation."""
 
     def __init__(
         self,

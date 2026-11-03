@@ -81,7 +81,7 @@ class M2Pool32TypedEvidenceRawLog1pV3(RawLog1pGeneImageBase):
         super().__init__(*args, **kwargs)
         self.model_name = "M2_v3_Pool32Homo12Hetero8TypedEvidenceRawLog1p"
         self.model_variant = "M2"
-        self.fusion_mode = "m1_v3_typed_evidence_cross_attention_m2_partitioned"
+        self.fusion_mode = "spagenx_typed_evidence_cross_attention"
         d_model = self.d_model
         feature_dim = self.feature_dim
         self.candidate_branch = M2NeighborBranch(feature_dim, d_model, 32, 0)

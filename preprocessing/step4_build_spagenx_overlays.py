@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Build M1/M2 index-only overlays from the shared rowmap cache.
+"""Build SpaGenX index-only overlays from the shared rowmap cache.
 
-M1: spatial K24 per section.
-M2: spatial candidate K32, then image-feature cosine homo12/hetero8.
+SpaGenX: spatial candidate K32, then image-feature cosine homo12/hetero8.
 No feature tensors are copied into overlays.
 """
 import argparse, json, time
@@ -14,7 +13,6 @@ import pandas as pd
 import torch
 from scipy.spatial import cKDTree
 
-K_M1 = 24
 K_M2 = 32
 K_HOMO = 12
 K_HETERO = 8
@@ -62,10 +60,6 @@ def main():
         by_section[section_code[sec]].append(rid)
     row_ids = torch.arange(N, dtype=torch.long)
     sec_tensor = torch.as_tensor([section_code[s] for s in sections], dtype=torch.int32)
-    m1_rows = torch.full((N, K_M1), -1, dtype=torch.long)
-    m1_fidx = torch.full((N, K_M1), -1, dtype=torch.long)
-    m1_mask = torch.zeros((N, K_M1), dtype=torch.bool)
-    m1_dist = torch.full((N, K_M1), float("inf"), dtype=torch.float32)
     cand_rows = torch.full((N, K_M2), -1, dtype=torch.long)
     cand_fidx = torch.full((N, K_M2), -1, dtype=torch.long)
     cand_mask = torch.zeros((N, K_M2), dtype=torch.bool)
@@ -98,11 +92,6 @@ def main():
                     cand_fidx[ridx[i], :take2] = torch.from_numpy(feature_idx[rr2])
                     cand_mask[ridx[i], :take2] = True
                     cand_dist[ridx[i], :take2] = torch.from_numpy(dist_i[:take2].astype(np.float32))
-                    take1 = min(K_M1, loc_i.size)
-                    m1_rows[ridx[i], :take1] = torch.from_numpy(rr2[:take1])
-                    m1_fidx[ridx[i], :take1] = torch.from_numpy(feature_idx[rr2[:take1]])
-                    m1_mask[ridx[i], :take1] = True
-                    m1_dist[ridx[i], :take1] = torch.from_numpy(dist_i[:take1].astype(np.float32))
         resource.append({"stage": "spatial_kdtree", "section_id": section_ids[sc], "n_rows": n, "time_sec": round(time.time() - t0, 4)})
     fs = load_pt(args.feature_store_pt)
     features = fs["features"] if isinstance(fs, dict) else fs
@@ -140,17 +129,14 @@ def main():
             hetero_rows[part] = lr; hetero_fidx[part] = lf; hetero_mask[part] = lm
         resource.append({"stage": "m2_feature_cosine", "section_id": section_ids[sc], "n_rows": len(ridx), "time_sec": round(time.time() - t0, 4)})
     common_meta = {"rowmap_root": str(rowmap_root), "feature_store_pt": str(args.feature_store_pt), "N": N, "n_sections": len(section_ids), "section_codebook": section_ids, "uses_gene_expression_for_neighbors": False, "copies_neighbor_feature_tensor": False, "total_time_sec": round(time.time() - t_all, 3)}
-    m1 = {"version": "m1_flat_neighbor_overlay", "row_ids": row_ids, "neighbor_row_ids": m1_rows, "neighbor_feature_indices": m1_fidx, "neighbor_valid_mask": m1_mask, "neighbor_spatial_distance": m1_dist, "section_or_sample_id": sec_tensor, "metadata": {**common_meta, "neighbor_k": K_M1}}
     m2 = {"version": "m2_pool32_homo_hetero_overlay", "row_ids": row_ids, "candidate_row_ids": cand_rows, "candidate_feature_indices": cand_fidx, "candidate_valid_mask": cand_mask, "candidate_spatial_distance": cand_dist, "candidate_feature_cosine_sim": cand_sim, "homo_row_ids": homo_rows, "homo_feature_indices": homo_fidx, "homo_valid_mask": homo_mask, "hetero_row_ids": hetero_rows, "hetero_feature_indices": hetero_fidx, "hetero_valid_mask": hetero_mask, "metadata": {**common_meta, "candidate_k": K_M2, "homo_k": K_HOMO, "hetero_k": K_HETERO}}
-    torch.save(m1, out / "m1_flat_neighbor_overlay.pt")
     torch.save(m2, out / "m2_pool32_homo_hetero_overlay.pt")
     pd.DataFrame(resource).to_csv(out / "overlay_build_resource_profile.tsv", sep="\t", index=False)
     def count_summary(name, mask, k):
         c = mask.sum(dim=1).numpy()
         return {"name": name, "n_rows": N, "k": k, "min": int(c.min()), "p50": float(np.percentile(c, 50)), "p90": float(np.percentile(c, 90)), "max": int(c.max()), "n_full": int((c == k).sum()), "n_zero": int((c == 0).sum())}
-    pd.DataFrame([count_summary("m1", m1_mask, K_M1)]).to_csv(out / "m1_neighbor_distribution.tsv", sep="\t", index=False)
     pd.DataFrame([count_summary("m2_candidate", cand_mask, K_M2), count_summary("m2_homo", homo_mask, K_HOMO), count_summary("m2_hetero", hetero_mask, K_HETERO)]).to_csv(out / "m2_homo_hetero_distribution.tsv", sep="\t", index=False)
-    final = {"task_status": "PASS", "m1_overlay_built": True, "m1_neighbor_k": K_M1, "m2_overlay_built": True, "m2_candidate_k": K_M2, "m2_homo_k": K_HOMO, "m2_hetero_k": K_HETERO, "m2_full_pool32_ready": True, "copies_neighbor_feature_tensor": False, "ready_for_training": False}
+    final = {"task_status": "PASS", "m2_overlay_built": True, "m2_candidate_k": K_M2, "m2_homo_k": K_HOMO, "m2_hetero_k": K_HETERO, "m2_full_pool32_ready": True, "copies_neighbor_feature_tensor": False, "ready_for_training": False}
     (out / "final_decision.json").write_text(json.dumps(final, indent=2) + "\n")
     print(json.dumps(final, indent=2), flush=True)
 

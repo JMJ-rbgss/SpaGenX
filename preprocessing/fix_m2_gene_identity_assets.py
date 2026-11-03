@@ -32,8 +32,7 @@ DEFAULT_MANIFEST = BASE / "deepseek_outcome/m2_v3_17organs_contract_fix_20260827
 DEFAULT_VOCAB = BASE / "new_pipeline_800gb/full_run_firstv1_rawlog1p_20260703_110639/step2_gene_rawlog1p/global_gene_vocab.tsv"
 DEFAULT_ROWMAP = BASE / "new_pipeline_800gb/full_run_firstv1_rawlog1p_20260703_110639/step3_rowmap_17organs"
 DEFAULT_H5AD = BASE / "hest_stimage_17organs_human_20260819/data/st"
-DEFAULT_PROGRAM = BASE / "deepseek_outcome/m1_v2_section_local_neighbor_gated_noprompt_20260704_195725/program256_rawlog1p_reselection_m16_20260704/program256_rawlog1p_frozen"
-DEFAULT_M1_OVERLAY = BASE / "new_pipeline_800gb/full_run_firstv1_rawlog1p_20260703_110639/step4_overlays_17organs/m1_flat_neighbor_overlay.pt"
+DEFAULT_PROGRAM = BASE / "program_source"
 DEFAULT_M2_OVERLAY = BASE / "new_pipeline_800gb/full_run_firstv1_rawlog1p_20260703_110639/step4_overlays_17organs/m2_pool32_homo_hetero_overlay.pt"
 
 EXPECTED = {
@@ -568,8 +567,6 @@ def main() -> None:
             "rowmap_root": str(args.rowmap),
             "row_to_gene_chunk_id_sha256": sha256_file(args.rowmap / "row_to_gene_chunk_id.pt"),
             "row_to_gene_row_index_sha256": sha256_file(args.rowmap / "row_to_gene_row_index.pt"),
-            "m1_neighbor_overlay": str(DEFAULT_M1_OVERLAY),
-            "m1_neighbor_overlay_sha256": sha256_file(DEFAULT_M1_OVERLAY),
             "m2_neighbor_overlay": str(DEFAULT_M2_OVERLAY),
             "m2_neighbor_overlay_sha256": sha256_file(DEFAULT_M2_OVERLAY),
             "row_ids_rebuilt": False,
@@ -624,7 +621,7 @@ def main() -> None:
             f"- Corrected manifest: `{manifest_out}`\n"
             f"- Rebuilt section-HVG384: `{hvg_path}`\n"
             f"- Rebuilt canonical P256/M16 overlay: `{program_audit['overlay_path']}`\n\n"
-            "The split, row IDs, image features, and M1/M2 neighbor topology were reused read-only. "
+            "The split, row IDs, image features, and SpaGenX neighbor topology were reused read-only. "
             "Existing runs still point to the old assets and were not modified or promoted.\n"
         )
         artifacts = []

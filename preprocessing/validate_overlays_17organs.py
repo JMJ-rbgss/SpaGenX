@@ -21,17 +21,11 @@ report = json.loads((RUN/"step1_features"/"feature_store_report.json").read_text
 F = int(report["features"])
 print("feature_store_features", F)
 
-m1 = torch.load(OV / "m1_flat_neighbor_overlay.pt", map_location="cpu", weights_only=False)
 m2 = torch.load(OV / "m2_pool32_homo_hetero_overlay.pt", map_location="cpu", weights_only=False)
 
 print("\n=== 1. 形状检查 ===")
-print("m1 keys", sorted(m1.keys()))
 print("m2 keys", sorted(m2.keys()))
 shapes = {
- "m1_rows": m1["neighbor_row_ids"].shape,
- "m1_fidx": m1["neighbor_feature_indices"].shape,
- "m1_mask": m1["neighbor_valid_mask"].shape,
- "m1_dist": m1["neighbor_spatial_distance"].shape,
  "m2_cand_rows": m2["candidate_row_ids"].shape,
  "m2_cand_fidx": m2["candidate_feature_indices"].shape,
  "m2_cand_mask": m2["candidate_valid_mask"].shape,
@@ -48,7 +42,6 @@ for k,v in shapes.items(): print(k, tuple(v))
 
 print("\n=== 2. 有效数分布（完整） ===")
 for name, mask in [
-    ("m1", m1["neighbor_valid_mask"]),
     ("m2_candidate", m2["candidate_valid_mask"]),
     ("m2_homo", m2["homo_valid_mask"]),
     ("m2_hetero", m2["hetero_valid_mask"]),
@@ -65,8 +58,6 @@ def check_oob(name, vals, mask, lo, hi):
     print(f"{name}: valid_min={int(valid.min())} valid_max={int(valid.max())} expected[{lo},{hi}) ok={ok}")
     return ok
 
-check_oob("m1_row_ids", m1["neighbor_row_ids"], m1["neighbor_valid_mask"], 0, N)
-check_oob("m1_fidx", m1["neighbor_feature_indices"], m1["neighbor_valid_mask"], 0, F)
 check_oob("m2_cand_rows", m2["candidate_row_ids"], m2["candidate_valid_mask"], 0, N)
 check_oob("m2_cand_fidx", m2["candidate_feature_indices"], m2["candidate_valid_mask"], 0, F)
 check_oob("m2_homo_rows", m2["homo_row_ids"], m2["homo_valid_mask"], 0, N)
@@ -76,7 +67,6 @@ check_oob("m2_hetero_fidx", m2["hetero_feature_indices"], m2["hetero_valid_mask"
 
 print("\n=== 4. 距离/cosine 有限性检查（完整） ===")
 for name, vals, mask in [
-    ("m1_dist", m1["neighbor_spatial_distance"], m1["neighbor_valid_mask"]),
     ("m2_cand_dist", m2["candidate_spatial_distance"], m2["candidate_valid_mask"]),
     ("m2_cand_cos", m2["candidate_feature_cosine_sim"], m2["candidate_valid_mask"]),
 ]:
