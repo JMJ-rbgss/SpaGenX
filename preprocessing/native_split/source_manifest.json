@@ -1,0 +1,43 @@
+{
+  "date": "2026-11-04",
+  "scope": "Native section splitting and frozen test-index construction",
+  "validation": "PASS: full module AST identical after excluding only the listed path assignments; syntax checks pass",
+  "scientific_logic_modified": false,
+  "upstream_patient_overlap_audit_generator_included": false,
+  "runtime_replay_executed": false,
+  "files": [
+    {
+      "target": "build_split_v3.py",
+      "original_filename": "build_split_v3.py",
+      "source_sha256": "3057b3f693b08e319271b9345202d8447a31c786b9bd98944a49b3df0d64bc40",
+      "release_sha256": "d3917615417c384866aa21abad6aa006adc9a7da08cd37a03e5a36495afbd7cb",
+      "allowed_changed_assignments": [
+        "BASE"
+      ]
+    },
+    {
+      "target": "build_mixed_replay_split.py",
+      "original_filename": "build_mixed_replay_split_v2.py",
+      "source_sha256": "4f667da0aafc41c95206685e56f0300421c75944f6a4cc3a0a6b4cd29bbd7f45",
+      "release_sha256": "cd792974f6714af82f1f47580bb71f01854e6dd16b9a8a41c8693b93dd915696",
+      "allowed_changed_assignments": [
+        "BASE",
+        "OLD_V3"
+      ]
+    },
+    {
+      "target": "build_clean_test_index.py",
+      "original_filename": "build_clean162_index.py",
+      "source_sha256": "85795f5a53bf034e54630f6c9895d0cd9fa0e4bc077f53d93015129fc350463d",
+      "release_sha256": "428387bceb7e91efef391dab8937d1c2146d2f105099b2e43b85fb40625e37eb",
+      "allowed_changed_assignments": [
+        "R",
+        "SRC",
+        "ROW_TO_CHUNK",
+        "MANIFEST",
+        "LEAK",
+        "NOLEAK"
+      ]
+    }
+  ]
+}
