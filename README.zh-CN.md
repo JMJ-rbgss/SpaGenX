@@ -158,6 +158,13 @@ python tests/test_automation.py
 
 ## 数据与模型可用性
 
+原始数据库地址：
+
+- **HEST-1K：**[官方数据集](https://huggingface.co/datasets/MahmoodLab/hest) · [官方项目与下载说明](https://github.com/mahmoodlab/HEST)。
+- **STimage-1K4M：**[官方数据集](https://huggingface.co/datasets/jiawennnn/STimage-1K4M) · [官方项目与元数据](https://github.com/JiawenChenn/STimage-1K4M)。
+
+请从原始提供方获取数据，并遵循相应访问流程和使用条款。
+
 仓库提供代码和框架图。SpaGenX权重、词典和Program映射请向维护者申请；下载链接待补充。UNI2-h权重请通过[官方模型页面 MahmoodLab/UNI2-h](https://huggingface.co/MahmoodLab/UNI2-h)申请访问，并遵守官方使用条款；代码和使用说明见[MahmoodLab/UNI](https://github.com/mahmoodlab/UNI)。本仓库不分发UNI2-h权重，获批下载后配置本地权重路径，再进行特征提取。研究数据与运行资产保存在Git之外。
 
 ## 引用

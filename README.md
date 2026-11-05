@@ -249,6 +249,13 @@ For missing MPP, ambiguous genes, feature/neighbor mismatch, checkpoint errors o
 
 ## Data & model availability
 
+Source datasets:
+
+- **HEST-1K:** [Official dataset](https://huggingface.co/datasets/MahmoodLab/hest) · [Official project and download instructions](https://github.com/mahmoodlab/HEST).
+- **STimage-1K4M:** [Official dataset](https://huggingface.co/datasets/jiawennnn/STimage-1K4M) · [Official project and metadata](https://github.com/JiawenChenn/STimage-1K4M).
+
+Obtain the data from the original providers and follow their access instructions and terms of use.
+
 The repository provides code and the overview figure. Request SpaGenX weights, gene dictionaries and Program mappings from the maintainers; download links will be added here. Keep research data and runtime assets outside Git.
 
 UNI2-h is an external frozen encoder with its own access and license conditions.
