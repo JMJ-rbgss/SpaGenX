@@ -198,6 +198,8 @@ A full four-GPU `torchrun` template is in the [training tutorial](docs/USAGE.zh-
 
 ## Output naming
 
+For the original paper's stored-feature inference and PCC/MAE evaluation, use [Native paper inference and evaluation](inference/paper_reproduction/README.md). This retains the experimental spatial protocol rather than the separate WSI-grid application protocol.
+
 Automatic WSI inference writes:
 
 ```text

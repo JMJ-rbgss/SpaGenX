@@ -1,5 +1,7 @@
 # SpaGenX
 
+论文原生特征推理及PCC/MAE评价入口见[原生论文复现说明](inference/paper_reproduction/README.md)，保留原特征、原邻域、spot/基因顺序和实际technology协议；与网站WSI自动网格入口分开。
+
 ## 基于组织学图像与结构化空间上下文预测空间基因表达
 
 ![SpaGenX框架总览](assets/SpaGenX_overview.png)

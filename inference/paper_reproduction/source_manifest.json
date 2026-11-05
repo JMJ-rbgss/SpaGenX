@@ -1,0 +1,72 @@
+{
+  "date": "2026-11-05",
+  "scope": "Native paired paper inference/evaluation; fixed published-model protocol",
+  "files": [
+    {
+      "file": "common.py",
+      "source_sha256": "78ad44de4115db56c6049f91516f5820eda89524421f0c154137dcec6e41a616",
+      "release_sha256": "f2ba314998355dc5a423842119f0e052f0604d776b2c683ccae4091ab4aca18f"
+    },
+    {
+      "file": "preflight.py",
+      "source_sha256": "7eaa41c16bbc8ba3d4ddb2a1035faa4fda67ab4f0fb13bec80a6d3ec1a9688e2",
+      "release_sha256": "7d8dad228ed5f7ae6f239a64993df8304b79e6ab362229d8417a8d69263b77fc"
+    },
+    {
+      "file": "worker.py",
+      "source_sha256": "25f0f7082009041d365415be8dfc6c124c1c1c05cfa6abaf2287f3d8d1c88b7d",
+      "release_sha256": "f960b769615736f89dbc4d152e62d18eabdf5fadca2655ea2ba57a0c3771b835"
+    },
+    {
+      "file": "run.py",
+      "source_sha256": "caa8cb6226c73fed99c8205ae2c921ae5740288ec2d62f51a18e63e3e8e2e868",
+      "release_sha256": "5bc8bd9614128ded9fc09df4dc010bf3b897be0ba66b71ab153f07a4b95ec841"
+    },
+    {
+      "file": "evaluate.py",
+      "source_sha256": "9b82995ac76057f1e86947f1ed3862578c571b98344c0b59c88ebbf04c3692de",
+      "release_sha256": "e8718ec37c83d0237091f381421d0d9fa6e349eb5c511234b3e99c8060fe76c5"
+    }
+  ],
+  "permitted_changes": [
+    "SpaGenX release identifiers and model display labels; biological gene identifiers remain untouched",
+    "External root/path assignments in common.py",
+    "Two external coordinate-root aliases and the frozen split path alias",
+    "Native runtime import uses the existing spagenx_trainer module after exact helper AST comparison"
+  ],
+  "source_preservation_check": "PASS: complete module AST identity after the documented identifier/path normalization",
+  "runtime_dependency": {
+    "release_file": "training/spagenx_trainer.py",
+    "release_sha256": "5469d86714ab06cde69af6c29ca67e42582ae8eb290b38c203bc7a6a57f0968e",
+    "original_dependency_sha256": "06219655bf845d25e078e8cf5c926dba548aabcc4e5d75efaf12eb3d6f16d4bd",
+    "verified_exact_helpers": [
+      "load_codebooks",
+      "load_rowmap_tensors",
+      "load_feature_store",
+      "load_spagenx_neighbor_overlay",
+      "gather_spagenx_neighbors"
+    ],
+    "model_original_sha256": "c7b340a592ba7e199b9b47bbb160ce8273a340d51e3c426eb75028f9b6483ffa",
+    "shared_original_sha256": "e87507013bd0867889744eed34120d2c57bbd0b6167768d471c8eddd40fd12f4"
+  },
+  "evaluation_verification": {
+    "status": "PASS",
+    "sections": 162,
+    "gene_symbols_and_ids_unchanged": true,
+    "matched_tables": [
+      "section_gene_pcc.tsv",
+      "section_hvg50_pcc.tsv",
+      "overall_metrics.tsv",
+      "bootstrap_replicates.tsv",
+      "bootstrap_ci.tsv"
+    ],
+    "table_numeric_comparison_atol": 0,
+    "table_numeric_comparison_rtol": 0,
+    "section_equal_PCC": 0.3726382778003318,
+    "section_equal_MAE_original_array_arithmetic": 1.0090012531957508,
+    "original_inputs_read_only": true,
+    "inference_rerun": false,
+    "training_started": false
+  },
+  "weights_or_data_distributed": false
+}
