@@ -182,6 +182,8 @@ Add `--execute` to an individual command after checking prerequisites and fresh 
 
 Historical 17-organ extension and older HVG migration scripts are protected source archives. They originally used in-place migrations; do not remove their guards or run them on source data.
 
+The canonical stage writes `corrected_gene_assets/section_hvg384_ids.pt`. Pass this file to the active-row stage as `--old-hvg`; it is used only for overlap auditing, not HVG selection. No separate historical HVG download is required. The example configuration connects these stages. Training must use the resulting `section_hvg384_active_rows.pt` through `--section_hvg_path`. See the [HVG stage handoff](preprocessing/README.md#canonical--active-row-hvg384--training) for the exact paths.
+
 #### 3. Launch native training with PyTorch
 
 ```bash

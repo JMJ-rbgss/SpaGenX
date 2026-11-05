@@ -271,6 +271,20 @@ python preprocessing/run.py --stage hvg384 --config configs/preprocessing.local.
 
 上述命令默认预览。核对每一步输入输出后，在对应命令末尾加`--execute`。canonical修正需要词典、划分、rowmap及Program源表；HVG重建需要校正manifest、有效rowmap和冻结split。将校正后的manifest/Program配置为后续训练输入。
 
+#### canonical与HVG384的输入输出衔接
+
+以下路径对应示例配置，均相对于仓库根目录：
+
+| 后续参数 | 前序输出 |
+| --- | --- |
+| HVG阶段`--manifest` | `runs/new_canonical/corrected_gene_assets/gene_label_chunks_manifest.tsv` |
+| HVG阶段`--old-hvg` | `runs/new_canonical/corrected_gene_assets/section_hvg384_ids.pt` |
+| 训练`--section_hvg_path` | `runs/new_hvg384/section_hvg384_active_rows.pt` |
+
+canonical阶段直接从校正表达生成整chunk的HVG清单，因此不需要另行下载历史HVG。原生有效行脚本仍要求`--old-hvg`，但只用它计算新旧清单的重合数及变化数量。最终HVG384由rowmap保留的有效表达行独立计算：保留实测零、屏蔽未实测基因，按方差降序及global gene ID升序选择。旧清单不参与新清单的计算或排序。
+
+修改canonical输出目录时，同步更新HVG阶段的两个输入。训练配置还须使用同一canonical输出的校正manifest和Program映射，并将`--section_hvg_path`改为上表最后一项；启动器不会自动更新训练配置。
+
 | 阶段 | 主要产物/作用 |
 | --- | --- |
 | discover | 发现已有数据源并生成inventory；需人工审核遗漏与映射 |

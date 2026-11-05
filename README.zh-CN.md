@@ -119,6 +119,8 @@ python preprocessing/run.py --stage hvg384 --config configs/preprocessing.local.
 
 确认依赖和全新输出后，逐阶段加`--execute`。canonical修正需要manifest、rowmap及Program源表；有效行HVG重建需要校正gene chunks、rowmap及冻结划分。历史原位迁移脚本保留`ARCHIVAL_ONLY`保护。
 
+canonical阶段会生成`corrected_gene_assets/section_hvg384_ids.pt`，将它作为有效行HVG阶段的`--old-hvg`输入即可，无需额外下载历史HVG文件。该输入只用于统计新旧重合数，不参与新HVG384的选择。示例配置已连接这两个阶段；训练的`--section_hvg_path`须指向最终的`section_hvg384_active_rows.pt`。详见[阶段衔接表](preprocessing/README.md#canonical--active-row-hvg384--training)。
+
 #### 3. 原生PyTorch训练
 
 ```bash
