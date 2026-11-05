@@ -156,7 +156,7 @@ python tests/test_automation.py
 
 ## 数据与模型可用性
 
-仓库提供代码和框架图。SpaGenX权重、词典和Program映射请向维护者申请；下载链接待补充。UNI2-h按其官方访问和许可条件获取。研究数据与运行资产保存在Git之外。
+仓库提供代码和框架图。SpaGenX权重、词典和Program映射请向维护者申请；下载链接待补充。UNI2-h权重请通过[官方模型页面 MahmoodLab/UNI2-h](https://huggingface.co/MahmoodLab/UNI2-h)申请访问，并遵守官方使用条款；代码和使用说明见[MahmoodLab/UNI](https://github.com/mahmoodlab/UNI)。本仓库不分发UNI2-h权重，获批下载后配置本地权重路径，再进行特征提取。研究数据与运行资产保存在Git之外。
 
 ## 引用
 

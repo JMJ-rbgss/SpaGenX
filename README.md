@@ -86,7 +86,7 @@ cp configs/bundle.example.json bundle_config.json
 
 Edit asset paths in `bundle_config.json`. Keep the supplied model/preprocessing implementations and verify asset hashes against [external_assets.json](docs/external_assets.json).
 
-Obtain UNI2-h from its [official model page](https://huggingface.co/MahmoodLab/UNI2-h). Request SpaGenX assets from the maintainers; download links will be added here.
+Obtain UNI2-h weights directly from the [official MahmoodLab/UNI2-h model page](https://huggingface.co/MahmoodLab/UNI2-h), following its access approval and terms of use. Official code and usage instructions are available in [MahmoodLab/UNI](https://github.com/mahmoodlab/UNI). This repository does not redistribute UNI2-h weights. Configure the approved local weight path before feature extraction. Request SpaGenX assets from the maintainers; download links will be added here.
 
 #### 2. Select the organ and genes
 
