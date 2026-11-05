@@ -8,6 +8,8 @@
 
 SpaGenX是一个基于组织学图像的框架，能够从常规H&E切片推断空间基因表达，并支持分子表型、空间表达模式及患者结局的下游分析。
 
+**SpaGenX Web平台：**[www.spagenx.com](https://www.spagenx.com)
+
 [English README](README.md) · [完整PyTorch命令教程](docs/USAGE.zh-CN.md) · [数据合同](docs/DATA_CONTRACT.md)
 
 ## 系统要求

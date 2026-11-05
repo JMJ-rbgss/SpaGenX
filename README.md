@@ -6,6 +6,8 @@
 
 SpaGenX is a histology-based framework for inferring spatial gene expression from routine H&E slides and enabling downstream analyses of molecular phenotypes, spatial expression patterns, and patient outcomes.
 
+**SpaGenX Web platform:** [www.spagenx.com](https://www.spagenx.com)
+
 [中文说明](README.zh-CN.md) · [完整PyTorch命令教程](docs/USAGE.zh-CN.md) · [Data contracts](docs/DATA_CONTRACT.md)
 
 ## System requirements
