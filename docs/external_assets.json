@@ -1,4 +1,13 @@
 {
+  "public_dictionary_download": {
+    "url": "https://github.com/JMJ-rbgss/SpaGenX/releases/download/dictionary-assets-v1/SpaGenX_dictionary_assets_v1.zip",
+    "sha256": "af8ff77fc41f40ff2d76cce3edcf154f941b93263ed908843c13881675aeaa6f",
+    "vocab_sha256": "281bcd321732d54a6a441917d4c0a501a83a25a3b8f63fa533920a38e66d5e8e",
+    "inference_codebooks_sha256": "b95c65bfd708a1dcfb1fd0c41ac5c25782969c1f4573c520807705751afa4552",
+    "program_sha256": "b7d9c1637cd83bb35189fac7592a041673091a49eb66b5dee5febb6b1abbf38f",
+    "identity_mapping_unchanged": true,
+    "source_section_metadata_removed": true
+  },
   "spagenx_checkpoint": {
     "sha256": "0bcb29527826a54f6be4ffd1e9140fc35167d6b48b9ced5ff21ab98e60cc7603",
     "distributed": false

@@ -92,7 +92,7 @@ repository/
     └── codebooks.json
 ```
 
-SpaGenX冻结资产请向项目维护者申请，下载链接待补充。UNI2-h从[官方模型页面](https://huggingface.co/MahmoodLab/UNI2-h)按其访问与许可条件获取。
+[下载SpaGenX字典资产](https://github.com/JMJ-rbgss/SpaGenX/releases/download/dictionary-assets-v1/SpaGenX_dictionary_assets_v1.zip)并解压到仓库根目录，得到canonical基因词典、Program映射和推理用器官／技术codebook。基因ID及映射保持不变，切片来源标识已移除；训练的切片级codebook由原生rowmap预处理生成。SpaGenX权重请向项目维护者申请。UNI2-h从[官方模型页面](https://huggingface.co/MahmoodLab/UNI2-h)按其访问与许可条件获取。
 
 ### 3.2 配置资产路径
 

@@ -88,7 +88,9 @@ cp configs/bundle.example.json bundle_config.json
 
 Edit asset paths in `bundle_config.json`. Keep the supplied model/preprocessing implementations and verify asset hashes against [external_assets.json](docs/external_assets.json).
 
-Obtain UNI2-h weights directly from the [official MahmoodLab/UNI2-h model page](https://huggingface.co/MahmoodLab/UNI2-h), following its access approval and terms of use. Official code and usage instructions are available in [MahmoodLab/UNI](https://github.com/mahmoodlab/UNI). This repository does not redistribute UNI2-h weights. Configure the approved local weight path before feature extraction. Request SpaGenX assets from the maintainers; download links will be added here.
+Download the [SpaGenX dictionary assets](https://github.com/JMJ-rbgss/SpaGenX/releases/download/dictionary-assets-v1/SpaGenX_dictionary_assets_v1.zip) and extract the archive into the repository root. It provides the canonical gene dictionary, frozen Program mapping and inference organ/technology codebook under `external_assets/`, with SHA256 checksums. Gene IDs and mappings are unchanged; source-section identifiers are omitted. Training generates its section-aware codebook through native rowmap preprocessing.
+
+Obtain UNI2-h weights directly from the [official MahmoodLab/UNI2-h model page](https://huggingface.co/MahmoodLab/UNI2-h), following its access approval and terms of use. Official code and usage instructions are available in [MahmoodLab/UNI](https://github.com/mahmoodlab/UNI). This repository does not redistribute UNI2-h weights. Configure the approved local weight path before feature extraction. Request SpaGenX weights from the maintainers.
 
 #### 2. Select the organ and genes
 
@@ -258,7 +260,7 @@ Source datasets:
 
 Obtain the data from the original providers and follow their access instructions and terms of use.
 
-The repository provides code and the overview figure. Request SpaGenX weights, gene dictionaries and Program mappings from the maintainers; download links will be added here. Keep research data and runtime assets outside Git.
+The repository provides code and the overview figure. [Download the SpaGenX dictionary assets](https://github.com/JMJ-rbgss/SpaGenX/releases/tag/dictionary-assets-v1) for the canonical gene dictionary, Program mapping and inference codebook. Request SpaGenX weights from the maintainers. Keep research data and runtime assets outside Git.
 
 UNI2-h is an external frozen encoder with its own access and license conditions.
 
